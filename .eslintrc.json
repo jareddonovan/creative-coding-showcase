@@ -1,0 +1,26 @@
+{
+  "env": {
+      "browser": true,
+      "node": true,
+      "es6": true
+  },
+  "extends": [
+    "p5js",
+    "p5js/dom",
+    "p5js/sound"
+  ],
+  "globals": {
+      "Atomics": "readonly",
+      "SharedArrayBuffer": "readonly",
+      "setup": "readonly",
+      "createCanvas": "readonly"
+  },
+  "parserOptions": {
+      "ecmaVersion": 2018
+  },
+  "rules": {
+    "semi": [1, "always"],
+    "no-unused-vars": "off",
+    "no-undef": "off" 
+  }
+}

@@ -1,0 +1,5 @@
+[Desktop Entry]
+Name=CreativeCodingShowcase
+Comment=Starts the creative coding showcase app automatically from /etc/xdg/autostart
+Exec=creative-coding-showcase
+

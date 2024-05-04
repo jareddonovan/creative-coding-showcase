@@ -1,0 +1,188 @@
+/*
+ * This CSS provides styling for the 'gallery' part of the showcase, where a 
+ * user is able to navigate left and right through a series of thumbnails for
+ * the various sketches that are shown. 
+ * 
+ * Jared Donovan 2024.
+ */
+
+html, body, main.gallery, main {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  color: white;
+  font-family: sans-serif;
+}
+
+main.gallery, main {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: hsl(225deg 7% 22%);
+}
+
+main.gallery.isShowingGallery, body.hideCursor main {
+  cursor: none;
+}
+
+main.gallery.isShowingGallery {
+  background: transparent;
+}
+
+.ifm {
+  display: flex;
+  box-sizing: border-box;
+  border-width: 0px;
+  padding: 0;
+  margin: 0;
+  width: 100%;
+  height: 100%;
+  /* width: 1280px;
+  height: 720px; */
+  background: hsl(225deg 7% 22%);
+  overflow: hidden;
+}
+
+.ifm.full {
+  width: 100%;
+  height: 100%;
+}
+
+.slider {
+  /* width: 300px; */
+  width: 100%;
+  text-align: center;
+  overflow: hidden;
+}
+
+.slides {
+  display: flex;
+  height: 380px;
+  
+  overflow-x: hidden;
+  scroll-snap-type: x mandatory;
+  
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
+}
+
+.slides::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+.slides::-webkit-scrollbar-thumb {
+  background: black;
+  border-radius: 10px;
+}
+
+.slides::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.slides > .slide {
+  scroll-snap-align: start;
+  flex-shrink: 0;
+  width: 300px;
+  height: 300px;
+  margin-right: 50px;
+  margin-left: 50px;
+  margin-top: 40px;
+  border-radius: 10px;
+  background: #eee;
+  color: #222;
+  transform-origin: center center;
+  transition: transform 0.5s;
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: end;
+  font-size: 20px;
+  box-shadow: 1px 1px 5px 5px rgb(0, 0, 0, 0.1);
+  background-size: cover;
+}
+
+.slides > .slide.end {
+  visibility: hidden;
+  width: 0px;
+}
+
+.slides > div.current {
+  box-shadow: 1px 1px 5px 5px rgb(0, 0, 0, 0.1), 0px 0px 20px 20px rgba(255, 239, 98, 0.9);
+}
+
+.slides div.name {
+  color: white;
+  font-weight: bold;
+  text-align: center;
+  width: 100%;
+  padding: 9px 0 13px 0;
+  background: rgba(0, 0, 0, 0.5);
+  border-radius: 0 0 10px 10px;
+}
+
+.slides > div.current div.name {
+  text-shadow: #a746cb 1px 2px 4px;
+}
+
+.slider > a {
+  display: inline-flex;
+  width: 5rem;
+  height: 1.5rem;
+  background: white;
+  text-decoration: none;
+  align-items: center;
+  justify-content: center;
+  margin: 0.5rem;
+  position: relative;
+}
+.slider > a:active {
+  top: 1px;
+}
+.slider > a:focus {
+  background: #000;
+}
+
+/* Don't need button navigation */
+@supports (scroll-snap-type) {
+  .slider > a {
+    display: none;
+  }
+}
+
+#gallery {
+  overflow: hidden;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  /* font-family: 'Ropa Sans', sans-serif; */
+  background-color: hsl(187 100% 83%);
+
+  background-image: linear-gradient(
+    0deg,
+    hsl(0deg 100% 81%) 0%,
+    hsl(332deg 93% 83%) 10%,
+    hsl(277deg 81% 86%) 20%,
+    hsl(219deg 100% 87%) 30%,
+    hsl(196deg 100% 83%) 40%,
+    hsl(187deg 100% 83%) 50%,
+    hsl(191deg 100% 80%) 60%,
+    hsl(197deg 100% 79%) 70%,
+    hsl(210deg 100% 83%) 80%,
+    hsl(244deg 100% 88%) 90%,
+    hsl(281deg 100% 84%) 100%
+  );
+}
+
+.hidden, #gallery.hidden {
+  display: none;
+}
+
+#p5_loading {
+  font-family: sans-serif;
+  color: #EEE;
+}
+

@@ -1,0 +1,10 @@
+[Desktop Entry]
+Name=cc showcase
+Comment=Creative Coding Showcase
+GenericName=Creative Coding Showcase
+Exec=creative-coding-showcase %U
+Icon=creative-coding-showcase
+Type=Application
+StartupNotify=true
+Terminal=false
+
