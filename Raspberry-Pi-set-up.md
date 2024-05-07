@@ -136,4 +136,4 @@ If you want it to start automatically also do this:
 sudo cp images/splash.png /usr/share/plymouth/themes/pix/splash.png
 ```
 
-[Creative Coding Cabinets]: https://github.com/awarua/creative-coding-cabinets
+[Creative Coding Cabinets]: https://github.com/jareddonovan/creative-coding-cabinets

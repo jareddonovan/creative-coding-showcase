@@ -241,4 +241,4 @@ Supported command line switches and values are:
   string can be provided for the name. This is an easy way to switch
   collections or specify which cabinet the app is running on.
 
-[Creative Coding Cabinets]: https://github.com/awarua/creative-coding-cabinets
+[Creative Coding Cabinets]: https://github.com/jareddonovan/creative-coding-cabinets
