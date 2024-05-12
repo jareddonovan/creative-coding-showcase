@@ -6,35 +6,8 @@ more general info, see the [README](README.md)
 
 * Set hostname
 * Set up wifi
-
-### Set up desktop appearance
-
-* Invert the monitor
-* Set monitor resolution to 1440x900
-* Task bar at bottom
-* Solid color for background
-* Darker shade of same color for window bar
-* Lighter shade of same color for taskbar
-* Remove waste basket and drives from desktop
-* Set font size of terminal and desktop to 14pt
-* Set mouse size to medium
-* Set icon size to maximum
-* Untick the option that checks about executable scripts
-* Untick the option for screen blanking
-
-## Set up arcadeBonnet
-
-```
-cd scripts
-sudo bash arcade-bonnet.sh
-```
-
-## Test buttons and sound
-
-The following p5js sketch collection allows you to test that the buttons and
-sound are working. It can be handy to bookmark this in the raspberry pi browser.
-
-<https://editor.p5js.org/creativecoding/collections/idDLXfg-F>
+* Make sure keyboard layout is correct.
+* Set username / password.
 
 ## Set up ssh
 
@@ -42,6 +15,11 @@ sound are working. It can be handy to bookmark this in the raspberry pi browser.
 ssh-keygen
 ssh-copy-id -i ~/.ssh/id_rsa user@host
 ```
+
+The change to the other machine and copy the keys back. You can 
+then test the connection by ssh-ing back to the cabinet.
+
+`ssh USER@CABINET_NAME.local`
 
 ## Configure git
 
@@ -57,6 +35,39 @@ git config --global user.name "Your Name"
 git clone
 git switch
 ```
+
+### Set up desktop appearance
+
+* Set monitor resolution to 1440x900
+* Task bar at bottom
+* Solid color for background
+* Darker shade of same color for window bar
+* Lighter shade of same color for taskbar
+* Remove waste basket and drives from desktop
+* Set font size of terminal and desktop to 14pt
+* Set mouse size to medium
+* Set icon size to maximum
+* In raspi configuration
+  * (? Untick the option that checks about executable scripts)
+    (? This may have applied to an earlier version of the OS?)
+  * Untick the option for screen blanking
+
+## Set up arcadeBonnet
+
+```
+cd scripts
+sudo bash arcade-bonnet.sh
+```
+
+## Test buttons and sound
+
+The following p5js sketch collection allows you to test that the buttons and
+sound are working. It can be handy to bookmark this in the raspberry pi browser.
+
+<https://editor.p5js.org/creativecoding/collections/idDLXfg-F>
+
+* For the sound, set the volume to about 75%. If it is all the way up,
+  the sound will drop out.
 
 ## Copy over sketches you want to show
 
