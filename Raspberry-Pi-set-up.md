@@ -32,8 +32,16 @@ git config --global user.name "Your Name"
 ## Check out repository for creative coding showcase
 
 ```
-git clone
-git switch
+mkdir ~/Documents/coding
+cd ~/Documents/coding
+git clone https://github.com/jareddonovan/creative-coding-showcase.git
+```
+## Set up github commandline utility.
+
+* <https://github.com/cli/cli/blob/trunk/docs/install_linux.md>
+
+```
+gh auth login
 ```
 
 ### Set up desktop appearance
