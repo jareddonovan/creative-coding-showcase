@@ -145,7 +145,8 @@ Start the application to generate the config file so you can edit it.
 
 ```
 npm run make
-sudo apt install make/out/deb/armv71/creative-coding-....deb
+cd out/make/deb/armv64/
+sudo apt install creative-coding-....deb
 ```
 
 ## Set up keyboard shortcut
