@@ -220,4 +220,8 @@ The following forum thread looked promising)
 
 <https://forums.raspberrypi.com/viewtopic.php?t=357885>
 
+I followed the advice on there to try the following command, which worked:
+
+`sudo plymouth-set-default-theme --rebuild-initrd pix`
+
 [Creative Coding Cabinets]: https://github.com/jareddonovan/creative-coding-cabinets
