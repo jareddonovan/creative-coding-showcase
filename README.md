@@ -226,7 +226,9 @@ script to generate this, but these are too custom to include here.
 
 `npm start`
 
-To test with command-line switches
+To test with command-line switches (note - this doesn't seem to work on
+the raspberry pi)
+
 `./node_modules/.bin/electron main.js --SWITCH=VALUE`
 
 Supported command line switches and values are:

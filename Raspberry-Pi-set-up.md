@@ -62,10 +62,31 @@ gh auth login
 
 ## Set up arcadeBonnet
 
+For the Raspberry Pi 5, you'll also need to replace the GPIO library
+with a drop-in that's compatible.
+
+```
+sudo apt autoremove python3-rpi.gpio
+sudo apt install python3-rpi-lgpio
+```
+
+I have included a local copy of the script from AdaFruit, which has
+the key assignents already edited for what the showcase app expects,
+and has a minor fix for installing on the raspberry pi 5.
+
+NOTE: If you're not on a raspberry pi 5, review (lines 114-117) or use
+the AdaFruit script linked below.
+
 ```
 cd scripts
 sudo bash arcade-bonnet.sh
 ```
+
+Alternatively, check the installation instructions here:
+
+* <https://learn.adafruit.com/adafruit-arcade-bonnet-for-raspberry-pi/software>
+
+I choose 'N' to both questions, then reboot.
 
 ## Test buttons and sound
 
@@ -84,18 +105,29 @@ file prepared somewhere on your network, you can copy these over to the
 cabinet.
 
 ```
-scp sketches user@host:/home/user/Documents/creative-coding-showcase/sketches
+# Make a directory on the cabinet to hold the sketches
+mkdir ~/Documents/creative-coding-showcase
+
+# SSH to the host that has the sketches and cd to directory.
+ssh user@host       
+cd ~/Documents/creative-coding-showcase
+
+# Copy the sketches back to the cabinet.
+scp -r sketches user@cabinet:/home/user/Documents/creative-coding-showcase/sketches
 ```
 
 ## Install node and packages
 
 ```
-curl -fsSL https://deb.nodesource.com/setup_20.x | bash - &&
-apt-get install -y nodejs
+curl -fsSL https://deb.nodesource.com/setup_20.x | sudo bash -
+sudo apt-get install -y nodejs
+cd ~/Documents/coding/creative-coding-showcase
 npm install
 ```
 
 # Test app and edit config
+
+Start the application to generate the config file so you can edit it.
 
 `npm start`
 `nano ~/.config/creative-coding-showcase/config.json`
