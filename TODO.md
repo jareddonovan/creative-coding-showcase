@@ -13,3 +13,4 @@
 * [ ] Add an 'idle time' animation or behavior.
 * [ ] Get command line switches working on Raspberry Pi.
 * [ ] Prevent more than one instance of the showcase from launching.
+* [ ] Check whether there are other keyboard shortcuts to remove.

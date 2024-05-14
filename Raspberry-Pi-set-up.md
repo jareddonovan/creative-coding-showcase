@@ -189,6 +189,8 @@ binding_showcase_quit=<ctrl> <alt> KEY_3
 command_showcase_quit=killall creative-coding-showcase
 ```
 
+You probably also want to comment out (#) all the other entries.
+
 ## Get rid of the mouse cursor if necessary
 
 (Note: This will only work on raspberry pi bullseye. I haven't found 
