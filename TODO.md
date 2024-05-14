@@ -12,3 +12,4 @@
 * [ ] Add a script to help generate the `_links.json` file.
 * [ ] Add an 'idle time' animation or behavior.
 * [ ] Get command line switches working on Raspberry Pi.
+* [ ] Prevent more than one instance of the showcase from launching.
