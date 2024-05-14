@@ -47,6 +47,7 @@ gh auth login
 ### Set up desktop appearance
 
 * Set monitor resolution to 1440x900
+* Select dark mode.
 * Task bar at bottom
 * Solid color for background
 * Darker shade of same color for window bar
@@ -59,6 +60,14 @@ gh auth login
   * (? Untick the option that checks about executable scripts)
     (? This may have applied to an earlier version of the OS?)
   * Untick the option for screen blanking
+* in `~.config/wf-panel-pi.ini` add a line to the end `autohide=true`
+  to automatically hide the task bar.
+* In 'File Manager', open preferences, Edit > Preferences > General
+  * [x] Open files with a single click.
+  * [x] Don't ask options on launch executable file
+  * Then select > Preferences > Display and set size of big icons to
+    128x128
+
 
 ## Set up arcadeBonnet
 

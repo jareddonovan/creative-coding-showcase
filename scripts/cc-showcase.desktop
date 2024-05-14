@@ -1,10 +1,10 @@
 [Desktop Entry]
-Name=cc showcase
+Name=Launch Showcase
 Comment=Creative Coding Showcase
-GenericName=Creative Coding Showcase
+GenericName=creative-coding-showcase
 Exec=creative-coding-showcase %U
 Icon=creative-coding-showcase
 Type=Application
 StartupNotify=true
-Terminal=false
+Categories=GNOME;GTK;Utility;
 
