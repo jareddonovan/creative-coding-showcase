@@ -55,19 +55,16 @@ gh auth login
 * Remove waste basket and drives from desktop
 * Set font size of terminal and desktop to 14pt
 * Set mouse size to medium
-* Set icon size to maximum
 * In raspi configuration
-  * (? Untick the option that checks about executable scripts)
-    (? This may have applied to an earlier version of the OS?)
   * Untick the option for screen blanking
+  * Enable 'i2c' interface and 'ssh'. 
 * in `~.config/wf-panel-pi.ini` add a line to the end `autohide=true`
   to automatically hide the task bar.
 * In 'File Manager', open preferences, Edit > Preferences > General
   * [x] Open files with a single click.
   * [x] Don't ask options on launch executable file
   * Then select > Preferences > Display and set size of big icons to
-    128x128
-
+    256x256
 
 ## Set up arcadeBonnet
 
@@ -122,7 +119,7 @@ ssh user@host
 cd ~/Documents/creative-coding-showcase
 
 # Copy the sketches back to the cabinet.
-scp -r sketches user@cabinet:/home/user/Documents/creative-coding-showcase/sketches
+rsync -av ./sketches/* user@cabinet:/home/user/Documents/creative-coding-showcase/sketches
 ```
 
 ## Install node and packages
@@ -149,7 +146,9 @@ cd out/make/deb/armv64/
 sudo apt install creative-coding-....deb
 ```
 
-## Set up keyboard shortcut
+## Set up keyboard shortcuts
+
+### For rasbperry pi 4 "bullseye"
 
 ```
 sudo apt install xbindkeys
@@ -174,7 +173,26 @@ xbindkeys
 After that you should be able to press CTR+ALT+1 to launch the showcase and
 CTRL+ALT+3 to kill it.
 
+### For raspberry pi "bookworm"
+
+Bookworm uses a different window manager, 'wayland', so creating
+keyboard shortcuts is a bit different. 
+
+`nano ~/.config/wayfire.ini`
+
+And add the following lines to the first part, where shortcuts are defined. 
+
+```
+binding_showcase_start=<ctrl> <alt> KEY_1
+command_showcase_start=creative-coding-showcase
+binding_showcase_quit=<ctrl> <alt> KEY_3
+command_showcase_quit=killall creative-coding-showcase
+```
+
 ## Get rid of the mouse cursor if necessary
+
+(Note: This will only work on raspberry pi bullseye. I haven't found 
+as simple a solution for bookworm).
 
 ```
 sudo apt install unclutter
@@ -196,5 +214,10 @@ If you want it to start automatically also do this:
 ```
 sudo cp images/splash.png /usr/share/plymouth/themes/pix/splash.png
 ```
+
+(On the raspberry pi running bookworm, my custom pic would not show.
+The following forum thread looked promising)
+
+<https://forums.raspberrypi.com/viewtopic.php?t=357885>
 
 [Creative Coding Cabinets]: https://github.com/jareddonovan/creative-coding-cabinets
