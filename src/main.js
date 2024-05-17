@@ -176,6 +176,9 @@ const createWindow = () => {
           click: () => win.webContents.send("back"),
           label: "Back",
         },
+        {
+          role: "reload"
+        },
         { 
           role: "toggleDevTools" 
         },
