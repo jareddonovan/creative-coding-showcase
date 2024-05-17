@@ -5,9 +5,18 @@
  * Jared Donovan 2024.
  */
 
-let opts = {
+// opts needs to be declared as a 'var' so it's available 
+// to child pages.
+var opts = {
   debounceTime: 100
 }
+
+var importVars = {
+  currentId: 0,
+  idsGenerated: [],
+  newImportUrl: ""
+}
+
 let json
 let selectCover
 let ifm
@@ -17,6 +26,14 @@ let isShowingGallery = true
 let currIdx = 0
 // let numCovers = 0
 let lastKp = -opts.debounceTime
+
+function generateNewID(){
+  let newID = Date.now() + ""
+  importVars.idsGenerated.push(newID)
+  importVars.currentId = newID
+  return newID
+}
+
 
 /////////////////////////////////////////////////
 //
@@ -57,6 +74,9 @@ async function setup() {
   if (!opts.hideCursor){
     divMain.removeClass("hideCursor")
   }
+
+  // Get the import/new url from the options.
+  importVars.newImportUrl = opts.newImportUrl
 
   // Set the debounceTime from the options.
   lastKp = -opts.debounceTime
