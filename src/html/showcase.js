@@ -9,7 +9,7 @@ let opts = {
   debounceTime: 100
 }
 let json
-let sel
+let selectSlide
 let ifm
 let divGallery
 let divMain
@@ -25,8 +25,15 @@ let lastKp = -opts.debounceTime
 async function setup() {
   noCanvas()
 
-  sel = createSelect()
-  sel.changed(handleSelChanged)
+  // This select is just used as a way of conveniently recording which slide
+  // is currently selected in the UI. The select element is hidden in the
+  // running app, but if you uncomment the call to `hide()` below, it will be
+  // visible and you can select the slide to show from there.
+  selectSlide = createSelect()
+  selectSlide.changed(handleSlideSelectionChanged)
+  selectSlide.parent(select("main"))
+  selectSlide.position(10, 10)
+  // sel.hide()
 
   divGallery = select("#gallery")
   divMain = select("main")
@@ -66,7 +73,7 @@ async function setup() {
       // console.log(`${name} has not confirmed => not adding`);
     } else if (opts.cabinetName == "test" || 
       json[name]._cabinet == opts.cabinetName){
-      sel.option(name)
+      selectSlide.option(name)
       createSlide(name, slideIdx)
       slideIdx += 1
     }
@@ -74,9 +81,6 @@ async function setup() {
   // numSlides = slideIdx
   
   createEndSlide()
-
-  sel.parent(select("main"))
-  sel.hide()
 
   // Check if there is an index provided in the hash
   // This allows us to 'remember' which index is selected.
@@ -114,7 +118,7 @@ function updateUI(){
 // Set the currently selected sketch.
 //
 function setCurrIndex(newIdx){
-  if (newIdx >= 0 && newIdx < sel.elt.options.length){
+  if (newIdx >= 0 && newIdx < selectSlide.elt.options.length){
     let oldTarget = select(`#slide-${currIdx}`)
     oldTarget.removeClass("current")
     let newTarget = select(`#slide-${newIdx}`)
@@ -123,7 +127,7 @@ function setCurrIndex(newIdx){
     newTarget.elt.scrollIntoView(scrollOpts)
     newTarget.addClass("current")
     
-    sel.elt.selectedIndex = newIdx
+    selectSlide.elt.selectedIndex = newIdx
     updateLinks()
     currIdx = newIdx
   }
@@ -134,7 +138,7 @@ function setCurrIndex(newIdx){
 // Update the location hash to include the currently selected index.
 //
 function updateLinks() {
-  let idx = sel.elt.selectedIndex
+  let idx = selectSlide.elt.selectedIndex
   window.location.hash = idx
 }
 
@@ -230,7 +234,7 @@ function createEndSlide(){
 // Handle when the 'next' menu item is clicked.
 //
 function handleNextClicked(numToMove){
-  let nextIdx = min(currIdx + numToMove, sel.elt.options.length - 1)
+  let nextIdx = min(currIdx + numToMove, selectSlide.elt.options.length - 1)
   setCurrIndex(nextIdx)
 }
 
@@ -273,7 +277,7 @@ function handleSelectClicked(skipDebounce){
     return
   }
 
-  let name = sel.value()
+  let name = selectSlide.value()
   let {firstName, lastName} = getNameParts(name)
 
   window.electronAPI.setName({
@@ -325,9 +329,9 @@ function handleSelectClicked(skipDebounce){
 //
 // Handle when the selection changes.
 //
-function handleSelChanged(){
+function handleSlideSelectionChanged(){
   // console.log(sel.value(), sel.elt.selectedIndex);
-  let idx = sel.elt.selectedIndex
+  let idx = selectSlide.elt.selectedIndex
   setCurrIndex(idx)
 }
 
