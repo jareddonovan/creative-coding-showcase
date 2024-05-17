@@ -38,6 +38,7 @@ if (!fs.existsSync(configPath)){
     devTools: true,
     sketchesPath: defaultSketchesPath,
     allowP5jsImports: false,
+    hideCursor: true,
   }
 
   // Other commonly used dimensions.
@@ -75,7 +76,9 @@ function handleGetOpts() {
 const createWindow = () => {
   // Get any relevant boolean command-line arguments that were provided and
   // overwrite the values read from the configuration.
-  for (let boolOpt of ["fullscreen", "devTools", "fixCss", "allowP5jsImports"]){
+  for (let boolOpt of [
+    "fullscreen", "devTools", "fixCss", "allowP5jsImports", "hideCursor"
+  ]){
     if (app.commandLine.hasSwitch(boolOpt)){
       let optVal = app.commandLine.getSwitchValue(boolOpt)
       cmdOpts[boolOpt] = optVal === "true"
