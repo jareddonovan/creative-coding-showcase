@@ -322,15 +322,42 @@ function handleSelectClicked(skipDebounce){
   }
 
   let name = selectCover.value()
-  let {firstName, lastName} = getNameParts(name)
 
+  // TODO: This is a hack to quickly get it working, but it will do for now.
+  if (name === "Import Sketch"){
+    showImportSketch(name)
+  } else {
+    showSketch(name)
+  }
+}
+
+function showImportSketch(name){
+  console.log("showImportSketch()")
+
+  let displayName = name
+  let sketchPath = "import/index.html"
+
+  loadSketch(name, displayName, sketchPath, true)
+}
+  
+function showSketch(name){
+
+  let {firstName, lastName} = getNameParts(name)
+  let displayName = `${firstName} ${lastName}`
+  let sketchUrl = json[name].sketch 
+  let sketchPath = `${opts.sketchesPath}/${sketchUrl}` 
+  let shouldShowCursor = json[name]._show_cursor === true
+
+  console.log("sketchPath", sketchPath)
+
+  loadSketch(name, displayName, sketchPath, shouldShowCursor);
+}
+
+function loadSketch(name, displayName, sketchPath, shouldShowCursor){
   window.electronAPI.setName({
     name, 
-    displayName: `${firstName} ${lastName}`})
-  let sketchUrl = json[name].sketch
-  let d = new Date().toISOString()
-
-  let shouldShowCursor = json[name]._show_cursor === true
+    displayName
+  })
 
   ifm = createElement("iframe")
   // ifm.attribute('scrolling', 'no');
@@ -362,7 +389,7 @@ function handleSelectClicked(skipDebounce){
       checkRunning(ifm)
     }
   }
-  ifm.attribute("src", `${opts.sketchesPath}/${sketchUrl}?d=${d}`)
+  ifm.attribute("src", `${sketchPath}?d=${Date.now()}`)
   ifm.parent("#main")
 
   isShowingGallery = false
