@@ -1,6 +1,6 @@
 /*
  * This CSS provides styling for the 'gallery' part of the showcase, where a 
- * user is able to navigate left and right through a series of thumbnails for
+ * user is able to navigate left and right through a series of cover thumbs for
  * the various sketches that are shown. 
  * 
  * Jared Donovan 2024.
@@ -57,7 +57,7 @@ main.gallery.isShowingGallery {
   overflow: hidden;
 }
 
-.slides {
+.covers {
   display: flex;
   height: 380px;
   
@@ -68,21 +68,21 @@ main.gallery.isShowingGallery {
   -webkit-overflow-scrolling: touch;
 }
 
-.slides::-webkit-scrollbar {
+.covers::-webkit-scrollbar {
   width: 10px;
   height: 10px;
 }
 
-.slides::-webkit-scrollbar-thumb {
+.covers::-webkit-scrollbar-thumb {
   background: black;
   border-radius: 10px;
 }
 
-.slides::-webkit-scrollbar-track {
+.covers::-webkit-scrollbar-track {
   background: transparent;
 }
 
-.slides > .slide {
+.covers > .cover {
   scroll-snap-align: start;
   flex-shrink: 0;
   width: 300px;
@@ -104,16 +104,16 @@ main.gallery.isShowingGallery {
   background-size: cover;
 }
 
-.slides > .slide.end {
+.covers > .cover.end {
   visibility: hidden;
   width: 0px;
 }
 
-.slides > div.current {
+.covers > div.current {
   box-shadow: 1px 1px 5px 5px rgb(0, 0, 0, 0.1), 0px 0px 20px 20px rgba(255, 239, 98, 0.9);
 }
 
-.slides div.name {
+.covers div.name {
   color: white;
   font-weight: bold;
   text-align: center;
@@ -123,7 +123,7 @@ main.gallery.isShowingGallery {
   border-radius: 0 0 10px 10px;
 }
 
-.slides > div.current div.name {
+.covers > div.current div.name {
   text-shadow: #a746cb 1px 2px 4px;
 }
 

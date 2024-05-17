@@ -9,13 +9,13 @@ let opts = {
   debounceTime: 100
 }
 let json
-let selectSlide
+let selectCover
 let ifm
 let divGallery
 let divMain
 let isShowingGallery = true
 let currIdx = 0
-// let numSlides = 0
+// let numCovers = 0
 let lastKp = -opts.debounceTime
 
 /////////////////////////////////////////////////
@@ -25,14 +25,14 @@ let lastKp = -opts.debounceTime
 async function setup() {
   noCanvas()
 
-  // This select is just used as a way of conveniently recording which slide
+  // This select is just used as a way of conveniently recording which cover
   // is currently selected in the UI. The select element is hidden in the
   // running app, but if you uncomment the call to `hide()` below, it will be
-  // visible and you can select the slide to show from there.
-  selectSlide = createSelect()
-  selectSlide.changed(handleSlideSelectionChanged)
-  selectSlide.parent(select("main"))
-  selectSlide.position(10, 10)
+  // visible and you can select the cover to show from there.
+  selectCover = createSelect()
+  selectCover.changed(handleCoverSelectionChanged)
+  selectCover.parent(select("main"))
+  selectCover.position(10, 10)
   // sel.hide()
 
   divGallery = select("#gallery")
@@ -60,12 +60,12 @@ async function setup() {
   const response = await fetch(`${opts.sketchesPath}/_links.json`)
   json = await response.json()
 
-  // Create an 'end' slide 
-  createEndSlide()
+  // Create an 'end' cover
+  createEndCover()
 
   const names = Object.keys(json).sort()
 
-  let slideIdx = 0
+  let coverIdx = 0
   for (const name of names){
     if (json[name]._is_buggy){
       // console.log(`${name} _is_buggy => not adding`);
@@ -73,14 +73,14 @@ async function setup() {
       // console.log(`${name} has not confirmed => not adding`);
     } else if (opts.cabinetName == "test" || 
       json[name]._cabinet == opts.cabinetName){
-      selectSlide.option(name)
-      createSlide(name, slideIdx)
-      slideIdx += 1
+      selectCover.option(name)
+      createCover(name, coverIdx)
+      coverIdx += 1
     }
   }
-  // numSlides = slideIdx
+  // numCovers = coverIdx
   
-  createEndSlide()
+  createEndCover()
 
   // Check if there is an index provided in the hash
   // This allows us to 'remember' which index is selected.
@@ -118,16 +118,16 @@ function updateUI(){
 // Set the currently selected sketch.
 //
 function setCurrIndex(newIdx){
-  if (newIdx >= 0 && newIdx < selectSlide.elt.options.length){
-    let oldTarget = select(`#slide-${currIdx}`)
+  if (newIdx >= 0 && newIdx < selectCover.elt.options.length){
+    let oldTarget = select(`#cover-${currIdx}`)
     oldTarget.removeClass("current")
-    let newTarget = select(`#slide-${newIdx}`)
+    let newTarget = select(`#cover-${newIdx}`)
     let behavior = "auto"
     let scrollOpts = {behavior, block: "center", inline: "center"}
     newTarget.elt.scrollIntoView(scrollOpts)
     newTarget.addClass("current")
     
-    selectSlide.elt.selectedIndex = newIdx
+    selectCover.elt.selectedIndex = newIdx
     updateLinks()
     currIdx = newIdx
   }
@@ -138,7 +138,7 @@ function setCurrIndex(newIdx){
 // Update the location hash to include the currently selected index.
 //
 function updateLinks() {
-  let idx = selectSlide.elt.selectedIndex
+  let idx = selectCover.elt.selectedIndex
   window.location.hash = idx
 }
 
@@ -192,9 +192,9 @@ function getNameParts(name){
 
 /////////////////////////////////////////////////
 //
-// Create a slide based on the json info for the given name.
+// Create a cover for the sketch based on the json info for the given name.
 //
-function createSlide(name, idx){
+function createCover(name, idx){
   let {firstName, lastName} = getNameParts(name)
   let thumb = json[name].thumb
   let html = `<div class="name">${firstName} ${lastName}</div>`
@@ -202,10 +202,10 @@ function createSlide(name, idx){
   let div = createDiv(html)
   div.attribute("style", 
     `background-image: url("${opts.sketchesPath}/${thumb}");`)
-  div.addClass("slide")
-  div.id(`slide-${idx}`)
-  let slides = select("#slides")
-  div.parent(slides)
+  div.addClass("cover")
+  div.id(`cover-${idx}`)
+  let covers = select("#covers")
+  div.parent(covers)
   div.mouseClicked(() => {
     setCurrIndex(idx)
   })
@@ -213,15 +213,16 @@ function createSlide(name, idx){
 
 /////////////////////////////////////////////////
 //
-// Create a slide at the end of the gallery.
-// I *think* this is for layout purposes.
+// Create a cover at the end of the gallery.
+// This is just for layout purposes.
+// TODO: There is undoubtedly a better way to do this using just css!
 //
-function createEndSlide(){
+function createEndCover(){
   let div = createDiv("end")
-  div.addClass("slide")
+  div.addClass("cover")
   div.addClass("end")
-  let slides = select("#slides")
-  div.parent(slides)
+  let covers = select("#covers")
+  div.parent(covers)
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -234,7 +235,7 @@ function createEndSlide(){
 // Handle when the 'next' menu item is clicked.
 //
 function handleNextClicked(numToMove){
-  let nextIdx = min(currIdx + numToMove, selectSlide.elt.options.length - 1)
+  let nextIdx = min(currIdx + numToMove, selectCover.elt.options.length - 1)
   setCurrIndex(nextIdx)
 }
 
@@ -277,7 +278,7 @@ function handleSelectClicked(skipDebounce){
     return
   }
 
-  let name = selectSlide.value()
+  let name = selectCover.value()
   let {firstName, lastName} = getNameParts(name)
 
   window.electronAPI.setName({
@@ -329,9 +330,9 @@ function handleSelectClicked(skipDebounce){
 //
 // Handle when the selection changes.
 //
-function handleSlideSelectionChanged(){
+function handleCoverSelectionChanged(){
   // console.log(sel.value(), sel.elt.selectedIndex);
-  let idx = selectSlide.elt.selectedIndex
+  let idx = selectCover.elt.selectedIndex
   setCurrIndex(idx)
 }
 
