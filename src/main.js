@@ -38,6 +38,7 @@ if (!fs.existsSync(configPath)){
     devTools: true,
     sketchesPath: defaultSketchesPath,
     allowP5jsImports: false,
+    importNewUrl: "",
     hideCursor: true,
   }
 
@@ -98,7 +99,7 @@ const createWindow = () => {
 
   // Get any relevant string command-line arguments that were provided and
   // overwrite the values read from the configuration.
-  for (let strOpt of ["cabinetName", "sketchesPath"]){
+  for (let strOpt of ["cabinetName", "sketchesPath", "importNewUrl"]){
     if (app.commandLine.hasSwitch(strOpt)){
       let optVal = app.commandLine.getSwitchValue(strOpt)
       cmdOpts[strOpt] = optVal
