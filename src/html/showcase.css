@@ -23,7 +23,7 @@ main.gallery, main {
   background: hsl(225deg 7% 22%);
 }
 
-main.gallery.isShowingGallery, body.hideCursor main {
+main.gallery.isShowingGallery.hideCursor, body.hideCursor main {
   cursor: none;
 }
 

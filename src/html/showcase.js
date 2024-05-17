@@ -38,6 +38,8 @@ async function setup() {
   divGallery = select("#gallery")
   divMain = select("main")
 
+  // If options have 
+
   window.electronAPI.onNextSketch(handleNextClicked)
   window.electronAPI.onPrevSketch(handlePrevClicked)
   window.electronAPI.onSelect(handleSelectClicked)
@@ -50,6 +52,11 @@ async function setup() {
   // Fetch any commandline options from the main process
   let newOpts = await window.electronAPI.getOpts()
   opts = {...newOpts}
+
+  // If options specify that the cursor should not be hidden
+  if (!opts.hideCursor){
+    divMain.removeClass("hideCursor")
+  }
 
   // Set the debounceTime from the options.
   lastKp = -opts.debounceTime
