@@ -60,8 +60,8 @@ async function setup() {
   const response = await fetch(`${opts.sketchesPath}/_links.json`)
   json = await response.json()
 
-  // Create an 'end' cover
-  createEndCover()
+  // Create a 'bookend' cover for the start.
+  createBookendCover()
 
   const names = Object.keys(json).sort()
 
@@ -71,16 +71,25 @@ async function setup() {
       // console.log(`${name} _is_buggy => not adding`);
     } else if (!json[name]._has_confirmed) {
       // console.log(`${name} has not confirmed => not adding`);
-    } else if (opts.cabinetName == "test" || 
-      json[name]._cabinet == opts.cabinetName){
-      selectCover.option(name)
-      createCover(name, coverIdx)
+    } else if (
+      // Where is 
+      opts.cabinetName == "test" || 
+      json[name]._cabinet == opts.cabinetName
+    ){
+      createSketchCover(name, coverIdx)
       coverIdx += 1
     }
   }
+
   // numCovers = coverIdx
   
-  createEndCover()
+  // If specified in options, create cover for import sketch functionality.
+  if (opts.allowP5jsImports){
+    createImportCover(coverIdx)
+  }
+
+  // Create a 'bookend' cover for the end.
+  createBookendCover()
 
   // Check if there is an index provided in the hash
   // This allows us to 'remember' which index is selected.
@@ -194,21 +203,25 @@ function getNameParts(name){
 //
 // Create a cover for the sketch based on the json info for the given name.
 //
-function createCover(name, idx){
+function createSketchCover(name, idx){
   let {firstName, lastName} = getNameParts(name)
+  let title = `${firstName} ${lastName}`
   let thumb = json[name].thumb
-  let html = `<div class="name">${firstName} ${lastName}</div>`
 
-  let div = createDiv(html)
-  div.attribute("style", 
-    `background-image: url("${opts.sketchesPath}/${thumb}");`)
-  div.addClass("cover")
-  div.id(`cover-${idx}`)
-  let covers = select("#covers")
-  div.parent(covers)
-  div.mouseClicked(() => {
-    setCurrIndex(idx)
-  })
+  createCover(name, title, idx, thumb)
+}
+
+/////////////////////////////////////////////////
+//
+// Create a cover to import a sketch from the p5js library
+// This should only be shown if the option 'allowP5jsImports' has been set
+//
+function createImportCover(idx){
+  // let thumb = json[name].thumb
+  let name = "Import Sketch"
+  let title = name
+
+  createCover(name, title, idx)
 }
 
 /////////////////////////////////////////////////
@@ -217,12 +230,35 @@ function createCover(name, idx){
 // This is just for layout purposes.
 // TODO: There is undoubtedly a better way to do this using just css!
 //
-function createEndCover(){
+function createBookendCover(){
   let div = createDiv("end")
   div.addClass("cover")
   div.addClass("end")
   let covers = select("#covers")
   div.parent(covers)
+}
+
+/////////////////////////////////////////////////
+//
+// Helper function to create a cover given the provided info.
+// If path to thumb is not included, then it is not added.
+// 
+function createCover(name, title, idx, thumb){
+  selectCover.option(name)
+
+  let html = `<div class="name">${title}</div>`
+  let div = createDiv(html)
+  if (thumb){
+    div.attribute("style", 
+      `background-image: url("${opts.sketchesPath}/${thumb}");`)
+  }
+  div.addClass("cover")
+  div.id(`cover-${idx}`)
+  let covers = select("#covers")
+  div.parent(covers)
+  div.mouseClicked(() => {
+    setCurrIndex(idx)
+  })
 }
 
 //////////////////////////////////////////////////////////////////////////
