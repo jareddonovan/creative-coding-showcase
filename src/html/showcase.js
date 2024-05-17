@@ -226,7 +226,7 @@ function createImportCover(idx){
 
 /////////////////////////////////////////////////
 //
-// Create a cover at the end of the gallery.
+// Create a 'bookend' cover at the start/end of the gallery.
 // This is just for layout purposes.
 // TODO: There is undoubtedly a better way to do this using just css!
 //
