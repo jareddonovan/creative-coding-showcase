@@ -5,7 +5,7 @@
  * Jared Donovan 2024
  */
 
-const { app, BrowserWindow, Menu, ipcMain } = require("electron")
+const { app, BrowserWindow, Menu, ipcMain, shell } = require("electron")
 const path = require("path")
 const fs = require("fs")
 
@@ -201,7 +201,15 @@ const createWindow = () => {
     win.webContents.openDevTools()  
   }
 
-  win.webContents
+  // Open URL in user's browser.
+  // Prevent the app from opening the URL.
+  win.webContents.setWindowOpenHandler((details) => {
+    console.log("webContents.windowOpenHandler() details:", details.url)
+
+    shell.openExternal(details.url)
+    return { action: "deny" } 
+  })
+  
 }
 
 // TODO - Could use this as a means to launch an 'idle' animation or behavior?
