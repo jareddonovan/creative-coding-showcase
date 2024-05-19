@@ -1,6 +1,6 @@
 
 let cabinetName
-let newImportUrl
+let importsUrl
 let newImportLink
 let cnv
 let qrCode
@@ -13,7 +13,7 @@ function setup(){
   textAlign(CENTER, CENTER)
 
   cabinetName = window.parent.opts.cabinetName
-  newImportUrl = window.parent.importVars.newImportUrl
+  importsUrl = window.parent.importVars.importsUrl
 
   qrCode = createDiv()
   qrCode.style("width", `${0.75 * width}px`)
@@ -70,18 +70,17 @@ function updateURL(){
 
   currentId = window.parent.importVars.currentId
   let params = `?i=${currentId}&c=${cabinetName}`
-  let newImportFullUrl = `${newImportUrl}${params}`  
-  let linkText = newImportFullUrl
+  let newImportUrl = `${importsUrl}/new.php${params}`  
+  let linkText = newImportUrl
   linkText = linkText.split("//")[1]
 
   newImportLink.html( 
-    `<a href="${newImportFullUrl}" target="_blank">${linkText}</a>`
+    `<a href="${newImportUrl}" target="_blank">${linkText}</a>`
   )
-
   // Clear and regenerate the QR code
   qrCode.html("")
   new QRCode(qrCode.elt, {
-    text: newImportFullUrl,
+    text: newImportUrl,
     width: width * 0.75,
     height: width * 0.75,
     colorDark : "#000000",

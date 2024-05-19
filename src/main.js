@@ -38,7 +38,7 @@ if (!fs.existsSync(configPath)){
     devTools: true,
     sketchesPath: defaultSketchesPath,
     allowP5jsImports: false,
-    newImportUrl: "",
+    importsUrl: "http://0.0.0.0/imports",
     hideCursor: true,
   }
 
@@ -99,7 +99,7 @@ const createWindow = () => {
 
   // Get any relevant string command-line arguments that were provided and
   // overwrite the values read from the configuration.
-  for (let strOpt of ["cabinetName", "sketchesPath", "newImportUrl"]){
+  for (let strOpt of ["cabinetName", "sketchesPath", "importsUrl"]){
     if (app.commandLine.hasSwitch(strOpt)){
       let optVal = app.commandLine.getSwitchValue(strOpt)
       cmdOpts[strOpt] = optVal
@@ -230,6 +230,8 @@ const createWindow = () => {
 // import into the sketch.
 const checkForImports = () => {
   console.log("Checking for imports")
+
+
 
   setTimeout(checkForImports, 1000)
 }

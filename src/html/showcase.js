@@ -14,7 +14,7 @@ var opts = {
 var importVars = {
   currentId: 0,
   idsGenerated: [],
-  newImportUrl: ""
+  importsUrl: ""
 }
 
 let json
@@ -78,7 +78,7 @@ async function setup() {
   }
 
   // Get the import/new url from the options.
-  importVars.newImportUrl = opts.newImportUrl
+  importVars.importsUrl = opts.importsUrl
 
   // Set the debounceTime from the options.
   lastKp = -opts.debounceTime
