@@ -4,7 +4,7 @@ let importsUrl
 let newImportLink
 let cnv
 let qrCode
-let currentId
+let importCode
 let hasGeneratedCode = false
 
 function setup(){
@@ -56,7 +56,7 @@ function drawCode(){
   positionOnCanvas(qrCode, 0.125 * width, 50)
   positionOnCanvas(newImportLink, 0, 0.75 * width + 50 + 20)
 
-  text(`Import: ${currentId}`,
+  text(`Import: ${importCode}`,
     0, 0, width, height)
 
   // noLoop()  
@@ -67,9 +67,9 @@ function drawCode(){
 
 // Update the URL and QRCode for requesting a new import of a p5js sketch.
 async function updateUrl(){
-  currentId = await parent.window.electronAPI.generateNewId()
+  importCode = await parent.window.electronAPI.generateImportCode()
 
-  let params = `?i=${currentId}&c=${cabinetName}`
+  let params = `?i=${importCode}&c=${cabinetName}`
   let newImportUrl = `${importsUrl}/new.php${params}`  
   let linkText = newImportUrl
   linkText = linkText.split("//")[1]

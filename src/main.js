@@ -61,7 +61,7 @@ let cmdOpts = JSON.parse(fs.readFileSync(configPath, "utf8"))
 
 // Store a list of all the IDs that have been generated while the app has
 // been running. 
-let idsGenerated = []
+let importCodesGenerated = []
 
 // Check that the version recorded in the configuration file matches the app
 // version and issue a warning if not.
@@ -81,12 +81,12 @@ function handleGetOpts() {
 
 // This function will generate a new id for use to request a p5js sketch be
 // imported. Used by the 'import' sketch.js page.
-function handleGenerateNewId() {
-  let rawNewId = Date.now() + ""
-  let newId = (CRC32.str(rawNewId, 0) >>> 0).toString(32)
+function handleGenerateImportCode() {
+  let rawCode = Date.now() + ""
+  let newImportCode = (CRC32.str(rawNewCode, 0) >>> 0).toString(32)
 
-  idsGenerated.push(newId)
-  return newId
+  importCodesGenerated.push(newImportCode)
+  return newImportCode
 }
 
 const createWindow = () => {
@@ -272,7 +272,7 @@ const checkForImports = async () => {  // Get filtered json
 
 app.whenReady().then(() => {
   ipcMain.handle("get-opts", handleGetOpts)
-  ipcMain.handle("generate-new-id", handleGenerateNewId)
+  ipcMain.handle("generate-import-code", handleGenerateImportCode)
 
   createWindow()
 
