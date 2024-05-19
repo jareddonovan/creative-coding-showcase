@@ -27,11 +27,13 @@ let currIdx = 0
 // let numCovers = 0
 let lastKp = -opts.debounceTime
 
-function generateNewID(){
-  let newID = Date.now() + ""
-  importVars.idsGenerated.push(newID)
-  importVars.currentId = newID
-  return newID
+function generateNewId(){
+  let rawNewId = Date.now() + ""
+  let newId = (CRC32.str(rawNewId, 0) >>> 0).toString(32)
+
+  importVars.idsGenerated.push(newId)
+  importVars.currentId = newId
+  return newId
 }
 
 
