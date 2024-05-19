@@ -207,13 +207,14 @@ const createWindow = () => {
     win.webContents.openDevTools()  
   }
 
-  // Open URL in user's browser.
-  // Prevent the app from opening the URL.
+  // Prevent the app from opening the URL in-app, instead open in browser.
+  // TODO: I should lock this down for the final app so that it just doesn't 
+  //       open at al. 
   win.webContents.setWindowOpenHandler((details) => {
     console.log("webContents.windowOpenHandler() details:", details.url)
 
     shell.openExternal(details.url)
-    return { action: "deny" } 
+    return { action: "deny" }
   })
   
 }
