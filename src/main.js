@@ -148,6 +148,12 @@ const createWindow = () => {
       win.webContents.send("back")
     }
   })  
+
+  // If the configuration has been set to allow imports from p5js, launch a
+  // timeout to check for new urls to import.
+  if (cmdOpts.allowP5jsImports){
+    setTimeout(checkForImports, 1000)
+  }
   
   // TODO: Looking at the idle time might allow for an autonomous animation to
   //       load and run if the cabinets have been quiet for a while.
@@ -217,6 +223,15 @@ const createWindow = () => {
 //   console.log(powerMonitor.getSystemIdleTime())
 //   setTimeout(reportIdleTime, 1000)
 // }
+
+// Function to check for new imports. This should happen periodically and each
+// time that a new import is found, it should launch a process to load that
+// import into the sketch.
+const checkForImports = () => {
+  console.log("Checking for imports")
+
+  setTimeout(checkForImports, 1000)
+}
 
 app.whenReady().then(() => {
   ipcMain.handle("get-opts", handleGetOpts)
