@@ -11,12 +11,6 @@ var opts = {
   debounceTime: 100
 }
 
-var importVars = {
-  currentId: 0,
-  idsGenerated: [],
-  importsUrl: ""
-}
-
 let json
 let selectCover
 let ifm
@@ -27,14 +21,6 @@ let currIdx = 0
 // let numCovers = 0
 let lastKp = -opts.debounceTime
 
-function generateNewId(){
-  let rawNewId = Date.now() + ""
-  let newId = (CRC32.str(rawNewId, 0) >>> 0).toString(32)
-
-  importVars.idsGenerated.push(newId)
-  importVars.currentId = newId
-  return newId
-}
 
 
 /////////////////////////////////////////////////
@@ -76,10 +62,7 @@ async function setup() {
   if (!opts.hideCursor){
     divMain.removeClass("hideCursor")
   }
-
-  // Get the import/new url from the options.
-  importVars.importsUrl = opts.importsUrl
-
+  
   // Set the debounceTime from the options.
   lastKp = -opts.debounceTime
   
@@ -353,6 +336,7 @@ function handleSelectClicked(skipDebounce){
   }
 }
 
+// Load the 'Import Sketch' sketch into the frame.
 function showImportSketch(name){
   console.log("showImportSketch()")
 
@@ -362,6 +346,7 @@ function showImportSketch(name){
   loadSketch(name, displayName, sketchPath, true)
 }
   
+// Show the specified sketch (from the showcase) in the frame. 
 function showSketch(name){
 
   let {firstName, lastName} = getNameParts(name)
@@ -375,6 +360,7 @@ function showSketch(name){
   loadSketch(name, displayName, sketchPath, shouldShowCursor);
 }
 
+// Helper to load a sketch into the frame (import, or showcase)
 function loadSketch(name, displayName, sketchPath, shouldShowCursor){
   window.electronAPI.setName({
     name, 

@@ -5,7 +5,7 @@ let newImportLink
 let cnv
 let qrCode
 let currentId
-let hasGeneratedCode = false;
+let hasGeneratedCode = false
 
 function setup(){
   cnv = createCanvas(800, 800)
@@ -13,7 +13,7 @@ function setup(){
   textAlign(CENTER, CENTER)
 
   cabinetName = window.parent.opts.cabinetName
-  importsUrl = window.parent.importVars.importsUrl
+  importsUrl = window.parent.opts.importsUrl
 
   qrCode = createDiv()
   qrCode.style("width", `${0.75 * width}px`)
@@ -65,10 +65,10 @@ function drawCode(){
 // function mousePressed(){
 // }
 
-function updateURL(){
-  window.parent.generateNewId()
+// Update the URL and QRCode for requesting a new import of a p5js sketch.
+async function updateUrl(){
+  currentId = await parent.window.electronAPI.generateNewId()
 
-  currentId = window.parent.importVars.currentId
   let params = `?i=${currentId}&c=${cabinetName}`
   let newImportUrl = `${importsUrl}/new.php${params}`  
   let linkText = newImportUrl
@@ -91,10 +91,11 @@ function updateURL(){
   hasGeneratedCode = true
 }
 
-function keyPressed(){
-  updateURL()
+async function keyPressed(){
+  updateUrl()
 }
 
+// Function to position an html element relative to the canvas.
 function positionOnCanvas(elem, x, y){
   // Get left and top position of canvas
   let cX = cnv.elt.offsetLeft

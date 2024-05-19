@@ -7,4 +7,5 @@ contextBridge.exposeInMainWorld('electronAPI', {
   onSelect: (callback) => ipcRenderer.on('select', callback),
   onBack: (callback) => ipcRenderer.on('back', callback),
   getOpts: () => ipcRenderer.invoke('get-opts'),
+  generateNewId: () => ipcRenderer.invoke('generate-new-id'),
 })

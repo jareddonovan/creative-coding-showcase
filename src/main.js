@@ -8,6 +8,7 @@
 const { app, BrowserWindow, Menu, ipcMain, shell } = require("electron")
 const path = require("path")
 const fs = require("fs")
+const CRC32 = require("crc-32")
 
 const defaultTitle = "Creative Coding Showcase"
 let currentName = ""
@@ -58,6 +59,10 @@ if (!fs.existsSync(configPath)){
 console.log(`Reading config file from:\n\t${configPath}`)
 let cmdOpts = JSON.parse(fs.readFileSync(configPath, "utf8"))
 
+// Store a list of all the IDs that have been generated while the app has
+// been running. 
+let idsGenerated = []
+
 // Check that the version recorded in the configuration file matches the app
 // version and issue a warning if not.
 if (cmdOpts.version != app.getVersion()){
@@ -72,6 +77,16 @@ cmdOpts.version = app.getVersion()
 // the showcase.js app to access the config/command-line options.
 function handleGetOpts() {
   return cmdOpts  
+}
+
+// This function will generate a new id for use to request a p5js sketch be
+// imported. Used by the 'import' sketch.js page.
+function handleGenerateNewId() {
+  let rawNewId = Date.now() + ""
+  let newId = (CRC32.str(rawNewId, 0) >>> 0).toString(32)
+
+  idsGenerated.push(newId)
+  return newId
 }
 
 const createWindow = () => {
@@ -228,7 +243,26 @@ const createWindow = () => {
 // Function to check for new imports. This should happen periodically and each
 // time that a new import is found, it should launch a process to load that
 // import into the sketch.
-const checkForImports = () => {
+const checkForImports = async () => {  // Get filtered json
+  
+  // let allImportsUrl = `${cmdOpts.importsUrl}/index.php?c=${cmdOpts.cabinetName}`
+
+  // let res = await fetch(allImportsUrl)
+  // let json = await res.json()
+
+  // let filteredJson = [];
+
+  // for (let entry of json) {
+  //   if (idsGenerated.includes(entry.req)
+  //     && entry.cabinet == cmdOpts.cabinetName){
+  //     filteredJson.push(entry)
+
+  //     // If the current id if found, then regenerate it.
+  //     if (currentId == entry.req){
+  //       loop()
+  //     }
+  //   }
+  // }
   console.log("Checking for imports")
 
 
@@ -238,6 +272,8 @@ const checkForImports = () => {
 
 app.whenReady().then(() => {
   ipcMain.handle("get-opts", handleGetOpts)
+  ipcMain.handle("generate-new-id", handleGenerateNewId)
+
   createWindow()
 
   app.on("activate", () => {
