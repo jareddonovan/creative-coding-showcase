@@ -8,15 +8,30 @@
 const { app, BrowserWindow, Menu, ipcMain, shell } = require("electron")
 const path = require("path")
 const fs = require("fs")
+const { Readable } = require("stream")
+const { finished } = require("stream/promises")
 const CRC32 = require("crc-32")
 
 const defaultTitle = "Creative Coding Showcase"
 let currentName = ""
 
+// Store a list of all the IDs that have been generated while the app has
+// been running. 
+// TODO: The initialization data below is just for testing.
+let importCodes = [
+  {code: "3ubqgkg", isImported: false}
+]
+
+// A list of all the ids we have permitted to import sketches. 
+// This will be overwritten by data from a file read in once config is loaded.
+let permittedImportIds = {
+  all: [],
+  byId: {}
+}
+
 // Look for a config file in the user's default application data folder
 let userDataPath = app.getPath("userData")
 let configPath = path.join(userDataPath, "config.json")
-
 
 // Look for a config file in the documents directory
 if (!fs.existsSync(configPath)){
@@ -25,7 +40,7 @@ if (!fs.existsSync(configPath)){
   let defaultSketchesPath  = path.join(
     documentsPath, "creative-coding-showcase", "sketches")
 
-  console.log("defaultSketchesPath:", defaultSketchesPath)
+  // console.log("defaultSketchesPath:", defaultSketchesPath)
 
   // Default configuration options. 
   const defaultOpts = {
@@ -40,6 +55,7 @@ if (!fs.existsSync(configPath)){
     sketchesPath: defaultSketchesPath,
     allowP5jsImports: false,
     importsUrl: "http://0.0.0.0/imports",
+    permittedImportIdsPath: `${defaultSketchesPath}/_permittedImportIds.json`,
     hideCursor: true,
   }
 
@@ -58,10 +74,6 @@ if (!fs.existsSync(configPath)){
 // Read the configuration file in.
 console.log(`Reading config file from:\n\t${configPath}`)
 let cmdOpts = JSON.parse(fs.readFileSync(configPath, "utf8"))
-
-// Store a list of all the IDs that have been generated while the app has
-// been running. 
-let importCodesGenerated = []
 
 // Check that the version recorded in the configuration file matches the app
 // version and issue a warning if not.
@@ -83,9 +95,9 @@ function handleGetOpts() {
 // imported. Used by the 'import' sketch.js page.
 function handleGenerateImportCode() {
   let rawCode = Date.now() + ""
-  let newImportCode = (CRC32.str(rawNewCode, 0) >>> 0).toString(32)
+  let newImportCode = (CRC32.str(rawCode, 0) >>> 0).toString(32)
 
-  importCodesGenerated.push(newImportCode)
+  importCodes.push({code: newImportCode, isImported: false})
   return newImportCode
 }
 
@@ -114,11 +126,21 @@ const createWindow = () => {
 
   // Get any relevant string command-line arguments that were provided and
   // overwrite the values read from the configuration.
-  for (let strOpt of ["cabinetName", "sketchesPath", "importsUrl"]){
+  for (let strOpt of [
+    "cabinetName", "sketchesPath", "importsUrl", "permittedImportIdsPath"]){
     if (app.commandLine.hasSwitch(strOpt)){
       let optVal = app.commandLine.getSwitchValue(strOpt)
       cmdOpts[strOpt] = optVal
     }
+  }
+
+  // Read in the permittedImportIdsPath if appropriate
+  if (cmdOpts.allowP5jsImports 
+    && fs.existsSync(cmdOpts.permittedImportIdsPath)){
+    console.log(
+      `Reading permitted import ids from:\n\t${cmdOpts.permittedImportIdsPath}`)
+    permittedImportIds = JSON.parse(
+      fs.readFileSync(cmdOpts.permittedImportIdsPath, "utf8"))
   }
 
   // Print out the cmdOpts so we can check that we're getting what we expect.
@@ -167,7 +189,7 @@ const createWindow = () => {
   // If the configuration has been set to allow imports from p5js, launch a
   // timeout to check for new urls to import.
   if (cmdOpts.allowP5jsImports){
-    setTimeout(checkForImports, 1000)
+    // setTimeout(checkForImports, 1000)
   }
   
   // TODO: Looking at the idle time might allow for an autonomous animation to
@@ -197,6 +219,10 @@ const createWindow = () => {
         {
           click: () => win.webContents.send("back"),
           label: "Back",
+        },
+        {
+          click: checkForImports,
+          label: "Check Imports",
         },
         {
           role: "reload"
@@ -244,30 +270,122 @@ const createWindow = () => {
 // time that a new import is found, it should launch a process to load that
 // import into the sketch.
 const checkForImports = async () => {  // Get filtered json
-  
-  // let allImportsUrl = `${cmdOpts.importsUrl}/index.php?c=${cmdOpts.cabinetName}`
-
-  // let res = await fetch(allImportsUrl)
-  // let json = await res.json()
-
-  // let filteredJson = [];
-
-  // for (let entry of json) {
-  //   if (idsGenerated.includes(entry.req)
-  //     && entry.cabinet == cmdOpts.cabinetName){
-  //     filteredJson.push(entry)
-
-  //     // If the current id if found, then regenerate it.
-  //     if (currentId == entry.req){
-  //       loop()
-  //     }
-  //   }
-  // }
   console.log("Checking for imports")
+  // console.log("importCodes:", importCodes)
 
+  const listImportsUrl = 
+    `${cmdOpts.importsUrl}/index.php?c=${cmdOpts.cabinetName}`
 
+  let res = await fetch(listImportsUrl)
+  let json = await res.json()
 
-  setTimeout(checkForImports, 1000)
+  // console.log("json:", json)
+
+  // Only pay attention to import requests we have a recorded code for
+  // (i.e., ones we generated on this app during this run.)
+  let validJson = json.filter(
+    je => importCodes.filter(ie => !ie.isImported).map(ie => ie.code)
+      .includes(je.import_code)
+  )
+  // Also only pay attention to import requests we have explicitly permitted a
+  // user to make
+  validJson = validJson.filter(
+    ve => permittedImportIds.all.includes(ve.id_hash)
+  )
+
+  for (let importJson of validJson) {
+    importSketch(importJson)    
+  }
+
+  // setTimeout(checkForImports, 10000)
+}
+
+const importSketch = async (importJson) => {
+  // console.log("importSketch:", importJson)
+
+  let sketchId = importJson.sketch_url.split("/").pop()
+  let sketchUser = importJson.sketch_url.split("/")[3]
+  let userName = permittedImportIds.byId[importJson.id_hash].name
+  let pathRoot = `${cmdOpts.sketchesPath}/_imports/${userName}/${sketchId}`
+
+  // Check if a previous import already exists
+  if (fs.existsSync(pathRoot)){
+    console.log("Removing previous import directory:", pathRoot)
+    fs.rmSync(pathRoot, {recursive: true, force: true})
+  }
+
+  const sketchJsonUrl =
+    `https://editor.p5js.org/editor/${sketchUser}/projects/${sketchId}`
+  
+  let res = await fetch(sketchJsonUrl)
+  let json = await res.json()
+
+  // Shape the data into a more convenient format. 
+  let paths = {
+    all: [],
+    byPath: {},
+    byId: {} 
+  }
+
+  // First, iterate and add all the ids and entries.
+  for (let p of json.files){
+    paths.all.push(p._id)
+    paths.byId[p._id] = p
+  }
+
+  // Next go through and add information about who is the parent.
+  for (let p of json.files){
+    for (let cId of p.children){
+      paths.byId[cId].parent = p._id
+    }
+  }
+
+  // Function to recursively rebuild the paths
+  function getPathRecursive(id){
+    const {name, parent} = paths.byId[id]
+    if (parent){
+      return `${getPathRecursive(parent)}/${name}`
+    } else {
+      return `${pathRoot}/${name}`
+    }
+  }
+
+  // Now reconstruct the path and create files / folders
+  for (let id of paths.all){
+    let p = paths.byId[id]
+    p.path = getPathRecursive(id)
+    paths.byPath[p.path] = id
+
+    if (p.fileType === "folder"){
+      createImportFolder(p.path)
+    } else if (p.url){
+      await downloadFile(p.path, p.url)
+    } else {
+      createFileWithContent(p.path, p.content)
+    }
+  }
+
+  // Finally, we need to add an entry for the imported file to the json in
+  //  `imports` folder and tell the javascript showcase to add it.
+
+}
+
+const createImportFolder = (path) => {
+  console.log("creating import folder:", path)
+  fs.mkdirSync(path, {recursive: true})
+}
+
+const createFileWithContent = (path, content) => {
+  console.log("creating file with content", path)
+  fs.writeFileSync(path, content)
+}
+
+const downloadFile = async (path, url) => {
+  console.log("downloading:", path, url)
+
+  const res = await fetch(url)
+  const fileStream = fs.createWriteStream(path, { flags: "wx" })
+  await finished(Readable.fromWeb(res.body).pipe(fileStream))  
 }
 
 app.whenReady().then(() => {
