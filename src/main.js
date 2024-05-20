@@ -199,14 +199,10 @@ const createWindow = () => {
 
     // Only pay attention to import requests we have a recorded code for
     // (i.e., ones we generated on this app during this run.)
-    //
-    let validJson = json
-    // TODO: Remove these checks for testing purposes.
-    //       Remember to add this back in later.
-    // let validJson = json.filter(
-    //   je => importCodes.filter(ie => !ie.isImported).map(ie => ie.code)
-    //     .includes(je.import_code)
-    // )
+    let validJson = json.filter(
+      je => importCodes.filter(ie => !ie.isImported).map(ie => ie.code)
+        .includes(je.import_code)
+    )
 
     // Also only pay attention to import requests we have explicitly permitted a
     // user to make
@@ -220,13 +216,23 @@ const createWindow = () => {
       let [newId, newJson] = await importSketch(validEntry)
       importJson[newId] = newJson
       addEntryToImportLinksJson(newId, newJson)
+
+      // Record that the import code has been used.
+      let usedImportCode = validEntry.import_code
+
+      importCodes = importCodes.map(ic => {
+        return {
+          code: ic.code, 
+          isImported: ic.code === usedImportCode ? true : ic.isImported
+        }
+      })
     }
 
     win.webContents.send("import-sketch", importJson)
 
-    // setTimeout(checkForImports, 60000)
+    setTimeout(checkForImports, 60000)
   }
-  // checkForImports()
+  checkForImports()
 
   // Watch for ESC key events so that we can cancel the currently running
   // sketch and return to the showcase.
