@@ -78,7 +78,7 @@ function setup(){
   colorMode(HSB)
   textAlign(CENTER, CENTER)
 
-  cabinetName = window?.parent?.opts?.cabinetName || "louie"
+  cabinetName = window?.parent?.opts?.cabinetName || "test"
   importsUrl = window?.parent?.opts?.importsUrl || "http://0.0.0.0/imports"
 
   if (cabinetName == "test" || cabinetName == "dewey"){
@@ -277,7 +277,7 @@ function drawCode(x, y, w, h){
 }
 
 function drawCurrentBorder(x, y, w, h){
-  // console.log("w", w, "h", h)
+  // console.log("x", x, "y", y, "w", w, "h", h)
 
   push()
   noFill()
@@ -357,13 +357,15 @@ async function keyPressed(){
 
 // Function to position an html element relative to the canvas.
 function positionOnCanvas(elem, x, y, w, h){
+  console.log("px", x, "py", y, "pw", w, "ph", h)
+
   // Get left and top position of canvas
   let cX = cnv.elt.offsetLeft
   let cY = cnv.elt.offsetTop
 
   elem.style("position", "absolute")
-  elem.style("left", `${cX + x}px`)
-  elem.style("top", `${cY + y}px`) 
+  elem.style("left", `${x}px`)
+  elem.style("top", `${y}px`) 
   if (w){
     elem.style("width", `${w}px`)
   }
