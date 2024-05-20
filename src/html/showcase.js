@@ -19,8 +19,7 @@ let divGallery
 let divMain
 let isShowingGallery = true
 let selectedCoverId = null
-let numCovers = 0
-// let numCovers = 0
+let nextCoverIdNum = 0
 let lastKp = -opts.debounceTime
 
 
@@ -112,7 +111,7 @@ async function setup() {
   let hash = window.location.hash.split("?")[0]
   let hashId = hash.match(/^#(?<id>cover-\d*)$/)
   hashId = hashId?.groups?.id
-  if (hashId){
+  if (hashId && document.querySelector(`#${hashId}`)){
     setSelectedCoverId(hashId)
   } else {
     // Set the selected cover to be the first 
@@ -126,6 +125,7 @@ async function setup() {
 
 function createCoversFromJson(json, position){
   const names = Object.keys(json).sort()
+  let newCoverId = ""
 
   for (const name of names){
     if (json[name]._is_buggy){
@@ -137,9 +137,12 @@ function createCoversFromJson(json, position){
       opts.cabinetName == "test" || 
       json[name]._cabinet == opts.cabinetName
     ){
-      createSketchCover(name, json, position)
+      newCoverId = createSketchCover(name, json, position)
+      json[name].coverId = newCoverId
     }
-  }  
+  }
+  
+  return newCoverId
 }
 
 /////////////////////////////////////////////////
@@ -247,9 +250,11 @@ function createSketchCover(name, json, position){
   // let {firstName, lastName} = getNameParts(name)
   // let title = `${firstName} ${lastName}`
   let title = name
-  let thumb = json[name].thumb
+  let thumb = `${opts.sketchesPath}/${json[name].thumb}`
 
-  createCover(name, title, thumb, position)
+  let newCoverId = createCover(name, title, thumb, position)
+
+  return newCoverId
 }
 
 /////////////////////////////////////////////////
@@ -258,11 +263,13 @@ function createSketchCover(name, json, position){
 // This should only be shown if the option 'allowP5jsImports' has been set
 //
 function createImportCover(){
-  // let thumb = json[name].thumb
+  let thumb = "./import/import.png"
   let name = "Import Sketch"
   let title = name
 
-  createCover(name, title)
+  let newCoverId = createCover(name, title, thumb)
+
+  return newCoverId
 }
 
 /////////////////////////////////////////////////
@@ -285,7 +292,7 @@ function createBookendCover(){
 // If path to thumb is not included, then it is not added.
 // 
 function createCover(name, title, thumb, position){
-  let coverId = `cover-${numCovers}`
+  let coverId = getNextCoverId()
 
   let opt = document.createElement("option")
   opt.value = name
@@ -299,7 +306,7 @@ function createCover(name, title, thumb, position){
   div.addClass("fade-in")
   if (thumb){
     div.attribute("style", 
-      `background-image: url("${opts.sketchesPath}/${thumb}");`)
+      `background-image: url("${thumb}?d=${Date.now()}");`)
   }
   div.addClass("cover")
 
@@ -313,12 +320,40 @@ function createCover(name, title, thumb, position){
   div.mouseClicked(() => {
     setSelectedCoverId(coverId)
   })
-  numCovers += 1
+
+  return coverId
+}
+
+// Remove a previously created cover from the UI. So that it can be updated.
+function removeCover(coverId){
+  let opt = Array.from(selectCover.elt.options).find(
+    o => o.dataset.coverId === coverId)
+
+  opt.parentNode.removeChild(opt)
+
+  let div = document.querySelector(`#${coverId}`)
+  let covers = select("#covers")
+  covers.elt.removeChild(div)
+
+  // TODO: Figure out what should happen to the selection, if the removed 
+  // cover was the currently selected one.
 }
 
 // Return the currently selected cover id
 function getSelectedCover(){
   return document.querySelector(`#${selectedCoverId}`)
+}
+
+// Return the number of covers currently loaded
+function getNumCovers(){
+  let covers = document.querySelector("#covers")
+  return covers.children.length - 2
+}
+
+function getNextCoverId(){
+  let coverId = `cover-${nextCoverIdNum}`
+  nextCoverIdNum += 1
+  return coverId
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -394,14 +429,31 @@ function handleImportSketch(json){
   // Handle the case where a version of the sketch is already in the
   // importJson
   for (let n of names){
+    let wasSelected = false
+
     if (Object.hasOwn(importJson, n)){
       console.log("Remove old cover and create a new one.")
-    } else {
-      // Add the new json into the json list and create a new cover for it
-      importJson[n] = json[n]
-      let jsonFragment = {}
-      jsonFragment[n] = json[n]
-      createCoversFromJson(jsonFragment, numCovers - 1)
+      let oldCoverId = importJson[n].coverId
+
+      // First check whether the old cover was selected
+      let oldCoverDiv = document.querySelector(`#${oldCoverId}`)
+      if (oldCoverDiv.classList.contains("current")){
+        console.log("The old cover was selected!")
+        wasSelected = true
+      }
+
+      removeCover(oldCoverId)
+    } 
+    // Add the new json into the json list and create a new cover for it
+    importJson[n] = json[n]
+    let jsonFragment = {}
+    jsonFragment[n] = json[n]
+    // Add the new cover one before the end.
+    let newCoverId = createCoversFromJson(jsonFragment, getNumCovers() - 1)
+    importJson[n].coverId = newCoverId
+
+    if (wasSelected){
+      setSelectedCoverId(newCoverId)
     }
   }
 }
