@@ -6,6 +6,8 @@ contextBridge.exposeInMainWorld("electronAPI", {
   onPrevSketch: (callback) => ipcRenderer.on("prev-sketch", callback),
   onSelect: (callback) => ipcRenderer.on("select", callback),
   onBack: (callback) => ipcRenderer.on("back", callback),
+  onImportSketch: (callback) => ipcRenderer.on(
+    "import-sketch", (_event, json) => callback(json)),
   getOpts: () => ipcRenderer.invoke("get-opts"),
   generateImportCode: () => ipcRenderer.invoke("generate-import-code"),
 })
