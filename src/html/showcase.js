@@ -263,7 +263,7 @@ function createSketchCover(name, json, position){
 // This should only be shown if the option 'allowP5jsImports' has been set
 //
 function createImportCover(){
-  let thumb = "./import/import.png"
+  let thumb = "./import/thumb.png"
   let name = "Import Sketch"
   let title = name
 
