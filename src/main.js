@@ -10,6 +10,7 @@ const path = require("path")
 const fs = require("fs")
 const { Readable } = require("stream")
 const { finished } = require("stream/promises")
+
 const CRC32 = require("crc-32")
 
 const defaultTitle = "Creative Coding Showcase"
@@ -18,9 +19,7 @@ let currentName = ""
 // Store a list of all the IDs that have been generated while the app has
 // been running. 
 // TODO: The initialization data below is just for testing.
-let importCodes = [
-  {code: "3ubqgkg", isImported: false}
-]
+let importCodes = []
 
 // A list of all the ids we have permitted to import sketches. 
 // This will be overwritten by data from a file read in once config is loaded.
@@ -40,8 +39,6 @@ if (!fs.existsSync(configPath)){
   let defaultSketchesPath  = path.join(
     documentsPath, "creative-coding-showcase", "sketches")
 
-  // console.log("defaultSketchesPath:", defaultSketchesPath)
-
   // Default configuration options. 
   const defaultOpts = {
     version: app.getVersion(),
@@ -59,21 +56,16 @@ if (!fs.existsSync(configPath)){
     hideCursor: true,
   }
 
-  // Other commonly used dimensions.
-  //
-  // width: 1920,
-  // height: 1080,
-  //
-  // width: 1280,
-  // height: 720,
+  // Other commonly used dimensions. 1920 x 1080, 1280 x 720
 
   console.log("Config file does not exist => creating.")
-  fs.writeFileSync(configPath, JSON.stringify(defaultOpts, null, 2), "utf8")
+  fs.writeFileSync(configPath, 
+    JSON.stringify(defaultOpts, undefined, 2), {encoding: "utf8"})
 }
 
 // Read the configuration file in.
 console.log(`Reading config file from:\n\t${configPath}`)
-let cmdOpts = JSON.parse(fs.readFileSync(configPath, "utf8"))
+let cmdOpts = JSON.parse(fs.readFileSync(configPath, {encoding: "utf8"}))
 
 // Check that the version recorded in the configuration file matches the app
 // version and issue a warning if not.
@@ -84,6 +76,21 @@ if (cmdOpts.version != app.getVersion()){
     }\n`)
 }
 cmdOpts.version = app.getVersion()
+
+// Add a blank _links.json file for the showcase sketches and for any import
+// (if indicated in settings)
+if (!fs.existsSync(`${cmdOpts.sketchesPath}/_links.json`)){
+  fs.writeFileSync(`${cmdOpts.sketchesPath}/_links.json`, 
+    JSON.stringify({}, undefined, 4), {encoding: "utf-8", recursive: true})
+}
+
+if (cmdOpts.allowP5jsImports && 
+  !fs.existsSync(`${cmdOpts.sketchesPath}/_imports/_links.json`)){
+  fs.mkdirSync(`${cmdOpts.sketchesPath}/_imports/`, {recursive: true})
+  fs.writeFileSync(`${cmdOpts.sketchesPath}/_imports/_links.json`, 
+    JSON.stringify({}, undefined, 4), {encoding: "utf-8", recursive: true})
+}
+
 
 // Handler to provide the options that the app is running with. This allows
 // the showcase.js app to access the config/command-line options.
@@ -178,19 +185,62 @@ const createWindow = () => {
     win.setTitle(nameData.displayName)
   }
 
+  // Function to check for new imports. This should happen periodically and each
+  // time that a new import is found, it should launch a process to load that
+  // import into the sketch.
+  const checkForImports = async () => {  // Get filtered json
+    console.log("Checking for imports")
+
+    const listImportsUrl = 
+      `${cmdOpts.importsUrl}/index.php?c=${cmdOpts.cabinetName}`
+
+    let res = await fetch(listImportsUrl)
+    let json = await res.json()
+
+    // Only pay attention to import requests we have a recorded code for
+    // (i.e., ones we generated on this app during this run.)
+    //
+    let validJson = json
+    // TODO: Remove these checks for testing purposes.
+    //       Remember to add this back in later.
+    // let validJson = json.filter(
+    //   je => importCodes.filter(ie => !ie.isImported).map(ie => ie.code)
+    //     .includes(je.import_code)
+    // )
+
+    // Also only pay attention to import requests we have explicitly permitted a
+    // user to make
+    validJson = validJson.filter(
+      ve => permittedImportIds.all.includes(ve.id_hash)
+    )
+
+    let importJson = {}
+
+    for (let validEntry of validJson) {
+      let [newId, newJson] = await importSketch(validEntry)
+      importJson[newId] = newJson
+      addEntryToImportLinksJson(newId, newJson)
+    }
+
+    win.webContents.send("import-sketch", importJson)
+
+    // setTimeout(checkForImports, 60000)
+  }
+  // checkForImports()
+
   // Watch for ESC key events so that we can cancel the currently running
   // sketch and return to the showcase.
   win.webContents.on("before-input-event", (event, input) => {
     if (input.type == "keyDown" && input.key === "Escape"){
       win.webContents.send("back")
     }
-  })  
+  })    
 
   // If the configuration has been set to allow imports from p5js, launch a
   // timeout to check for new urls to import.
-  if (cmdOpts.allowP5jsImports){
-    // setTimeout(checkForImports, 1000)
-  }
+  // if (cmdOpts.allowP5jsImports){
+  //   setTimeout(checkForImports, 1000)
+  // }
   
   // TODO: Looking at the idle time might allow for an autonomous animation to
   //       load and run if the cabinets have been quiet for a while.
@@ -260,58 +310,17 @@ const createWindow = () => {
   
 }
 
-// TODO - Could use this as a means to launch an 'idle' animation or behavior?
-// const reportIdleTime = () => {
-//   console.log(powerMonitor.getSystemIdleTime())
-//   setTimeout(reportIdleTime, 1000)
-// }
-
-// Function to check for new imports. This should happen periodically and each
-// time that a new import is found, it should launch a process to load that
-// import into the sketch.
-const checkForImports = async () => {  // Get filtered json
-  console.log("Checking for imports")
-  // console.log("importCodes:", importCodes)
-
-  const listImportsUrl = 
-    `${cmdOpts.importsUrl}/index.php?c=${cmdOpts.cabinetName}`
-
-  let res = await fetch(listImportsUrl)
-  let json = await res.json()
-
-  // console.log("json:", json)
-
-  // Only pay attention to import requests we have a recorded code for
-  // (i.e., ones we generated on this app during this run.)
-  let validJson = json.filter(
-    je => importCodes.filter(ie => !ie.isImported).map(ie => ie.code)
-      .includes(je.import_code)
-  )
-  // Also only pay attention to import requests we have explicitly permitted a
-  // user to make
-  validJson = validJson.filter(
-    ve => permittedImportIds.all.includes(ve.id_hash)
-  )
-
-  for (let importJson of validJson) {
-    importSketch(importJson)    
-  }
-
-  // setTimeout(checkForImports, 10000)
-}
-
-const importSketch = async (importJson) => {
-  // console.log("importSketch:", importJson)
-
+async function importSketch(importJson) {
   let sketchId = importJson.sketch_url.split("/").pop()
   let sketchUser = importJson.sketch_url.split("/")[3]
   let userName = permittedImportIds.byId[importJson.id_hash].name
-  let pathRoot = `${cmdOpts.sketchesPath}/_imports/${userName}/${sketchId}`
+  let pathRoot = `_imports/${userName.replace(/\s+/g, "_")}/${sketchId}`
+  let fullPathRoot = `${cmdOpts.sketchesPath}/${pathRoot}`
 
   // Check if a previous import already exists
-  if (fs.existsSync(pathRoot)){
+  if (fs.existsSync(fullPathRoot)){
     console.log("Removing previous import directory:", pathRoot)
-    fs.rmSync(pathRoot, {recursive: true, force: true})
+    fs.rmSync(fullPathRoot, {recursive: true, force: true})
   }
 
   const sketchJsonUrl =
@@ -323,7 +332,7 @@ const importSketch = async (importJson) => {
   // Shape the data into a more convenient format. 
   let paths = {
     all: [],
-    byPath: {},
+    atPath: {},
     byId: {} 
   }
 
@@ -341,20 +350,28 @@ const importSketch = async (importJson) => {
   }
 
   // Function to recursively rebuild the paths
-  function getPathRecursive(id){
+  function getBasePathRecursive(id, lvls){
     const {name, parent} = paths.byId[id]
     if (parent){
-      return `${getPathRecursive(parent)}/${name}`
+      return `${getBasePathRecursive(parent, lvls + 1)}/${lvls > 0 ? name : ""}`
     } else {
-      return `${pathRoot}/${name}`
+      return `${pathRoot}/${lvls > 0 ? name : ""}`
     }
   }
 
   // Now reconstruct the path and create files / folders
   for (let id of paths.all){
     let p = paths.byId[id]
-    p.path = getPathRecursive(id)
-    paths.byPath[p.path] = id
+    p.basePath = getBasePathRecursive(id, 0)
+    p.path = `${p.basePath}/${p.name}`
+
+    // Also record all the items at a given path. Makes it easier to 
+    // guess which should be the entry point for example.
+    if (Object.hasOwn(paths.atPath, p.basePath)){
+      paths.atPath[p.basePath].push({name: p.name, id: p.id})
+    } else {
+      paths.atPath[p.basePath] = [{name: p.name, id: p.id}]
+    }
 
     if (p.fileType === "folder"){
       createImportFolder(p.path)
@@ -365,26 +382,114 @@ const importSketch = async (importJson) => {
     }
   }
 
-  // Finally, we need to add an entry for the imported file to the json in
-  //  `imports` folder and tell the javascript showcase to add it.
+  // Figure out where the important files are. I will expect them all to be
+  // in the root directory.
+  let rootFilesPath = `${pathRoot}/root/`
+  let rootFiles = paths.atPath[rootFilesPath]
+  let missingFiles = []
 
+  let documentationFile = rootFilesPath
+  let wordFiles = rootFiles.filter(e => e.name.match(/\.docx?$/i))
+  let pdfFiles = rootFiles.filter(e => e.name.match(/\.pdf$/i))
+  if (pdfFiles.length > 0){
+    documentationFile = `${rootFilesPath}${pdfFiles[0].name}`
+  } else if (wordFiles.length > 0){
+    documentationFile = `${rootFilesPath}${wordFiles[0].name}`
+  } else {
+    documentationFile = rootFilesPath
+    missingFiles.push("documentation")
+  }
+
+  let instructionsFile = `${rootFilesPath}instructions.txt`
+  if (rootFiles.indexOf(e => e.name === "instructions.txt") == -1){
+    let txtFiles = rootFiles.filter(e => e.name.match(/\.txt$/i))
+    if (txtFiles.length > 0){
+      instructionsFile = `${rootFilesPath}${txtFiles[0].name}`
+    } else {
+      instructionsFile = rootFilesPath
+      missingFiles.push("instructions")
+    }
+  }
+
+  let sketchFile = `${rootFilesPath}index.html`
+  if (rootFiles.indexOf(e => e.name === "index.html") == -1){
+    let otherHtmlFiles = rootFiles.filter(e => e.name.match(/\.html$/i))
+    if (otherHtmlFiles.length > 0){
+      sketchFile = `${rootFilesPath}${otherHtmlFiles[0].name}`
+    } else {
+      sketchFile = rootFilesPath
+      missingFiles.push("sketch")
+    }
+  }
+
+  let thumbFile = `${rootFilesPath}thumb.png`
+  if (rootFiles.indexOf(e => e.name === "thumb.png") == -1){
+    let pngFiles = rootFiles.filter(e => e.name.match(/\.png?$/i))
+    let jpgFiles = rootFiles.filter(e => e.name.match(/\.jpe?g$/i))
+    if (pngFiles.length > 0){
+      thumbFile = `${rootFilesPath}${pngFiles[0].name}`
+    } else if (jpgFiles.length > 0){
+      thumbFile = `${rootFilesPath}${jpgFiles[0].name}`
+    } else {
+      thumbFile = rootFilesPath
+      missingFiles.push("thumb")
+    }  
+  }
+
+  let id = `${userName}-${sketchId}`.replace(/\s+/gi, "_")
+  let newJson = {
+    _cabinet: cmdOpts.cabinetName,
+    _found_all_files: missingFiles.length == 0,
+    _has_confirmed: true,
+    _is_buggy: false,
+    _missing_files: missingFiles,
+    documentation: documentationFile,
+    first_name: userName.split(" ")[0],
+    last_name: userName.split(" ").pop(),
+    instructions: instructionsFile,
+    sketch: sketchFile,
+    thumb: thumbFile
+  }
+
+  return [id, newJson]
+}
+
+// This function will add an entry to the _links.json for the _import folder.
+// If the _links.json does not already exist, then it will be created.
+const addEntryToImportLinksJson = (importId, newJson) => {
+  const importLinksJsonPath = `${cmdOpts.sketchesPath}/_imports/_links.json`
+  let oldImportLinksJson = {}
+
+  if (fs.existsSync(importLinksJsonPath)){
+    let oldImportLinksStr = fs.readFileSync(
+      importLinksJsonPath, {encoding: "utf-8"})
+    oldImportLinksJson = JSON.parse(oldImportLinksStr)
+  }
+
+  oldImportLinksJson[importId] = newJson
+  
+  // For now, I'll just save this to file
+  console.log("Writing updated import _links.json to file.")
+  fs.writeFileSync(importLinksJsonPath, 
+    JSON.stringify(oldImportLinksJson, undefined, 4), {encoding: "utf-8"})
 }
 
 const createImportFolder = (path) => {
-  console.log("creating import folder:", path)
-  fs.mkdirSync(path, {recursive: true})
+  console.log("creating import folder.")
+  fs.mkdirSync(`${cmdOpts.sketchesPath}/${path}`, {recursive: true})
 }
 
 const createFileWithContent = (path, content) => {
-  console.log("creating file with content", path)
-  fs.writeFileSync(path, content)
+  console.log("creating file with content.")
+  fs.writeFileSync(`${cmdOpts.sketchesPath}/${path}`, content)
 }
 
 const downloadFile = async (path, url) => {
-  console.log("downloading:", path, url)
+  console.log("downloading:", url)
 
   const res = await fetch(url)
-  const fileStream = fs.createWriteStream(path, { flags: "wx" })
+  const fileStream = fs.createWriteStream(
+    `${cmdOpts.sketchesPath}/${path}`, { flags: "wx" })
   await finished(Readable.fromWeb(res.body).pipe(fileStream))  
 }
 
