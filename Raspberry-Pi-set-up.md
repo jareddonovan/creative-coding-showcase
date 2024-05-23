@@ -102,8 +102,9 @@ sound are working. It can be handy to bookmark this in the raspberry pi browser.
 
 <https://editor.p5js.org/creativecoding/collections/idDLXfg-F>
 
-* For the sound, set the volume to about 75%. If it is all the way up,
-  the sound will drop out.
+* For the sound, it may be necessary to set the volume to about 75%.
+  On the USB speakers I purchased, If it is all the way up the sound
+  will drop out.
 
 ## Copy over sketches you want to show
 
@@ -122,6 +123,7 @@ cd ~/Documents/creative-coding-showcase
 # Copy the sketches back to the cabinet.
 rsync -av ./sketches/* user@cabinet:/home/user/Documents/creative-coding-showcase/sketches
 ```
+
 
 ## Install node and packages
 
@@ -144,7 +146,7 @@ Start the application to generate the config file so you can edit it.
 ```
 npm run make
 cd out/make/deb/armv64/
-sudo apt install creative-coding-....deb
+sudo apt install ./creative-coding-....deb
 ```
 
 ## Set up keyboard shortcuts
