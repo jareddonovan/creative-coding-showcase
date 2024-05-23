@@ -192,8 +192,6 @@ const createWindow = () => {
   // time that a new import is found, it should launch a process to load that
   // import into the sketch.
   const checkForImports = async () => {  // Get filtered json
-    console.log("Checking for imports")
-
     const listImportsUrl = 
       `${cmdOpts.importsUrl}/index.php?c=${cmdOpts.cabinetName}`
 
@@ -202,16 +200,7 @@ const createWindow = () => {
 
     // Only pay attention to import requests we have a recorded code for
     // (i.e., ones we generated on this app during this run.)
-    let validJson = json.filter(
-      je => importCodes.filter(ie => !ie.isImported).map(ie => ie.code)
-        .includes(je.import_code)
-    )
-
-    // Also only pay attention to import requests we have explicitly permitted a
-    // user to make
-    validJson = validJson.filter(
-      ve => permittedImportIds.all.includes(ve.id_hash)
-    )
+    let validJson = filterImportJson(json)
 
     let importJson = {}
 
@@ -233,9 +222,9 @@ const createWindow = () => {
 
     win.webContents.send("import-sketch", importJson)
 
-    setTimeout(checkForImports, 60000)
+    // setTimeout(checkForImports, 60000)
   }
-  checkForImports()
+  // checkForImports()
 
   // Watch for ESC key events so that we can cancel the currently running
   // sketch and return to the showcase.
@@ -317,6 +306,24 @@ const createWindow = () => {
     return { action: "deny" }
   })
   
+}
+
+// Function to filter json list returned by request to importUrl/index.php
+// so that it only includes entries that we have generated the import code for
+// and that come from a permitted user id on our list of ids.
+function filterImportJson(){
+  // First filter by valid import codes.
+  let validJson = json.filter(
+    je => importCodes.filter(ie => !ie.isImported).map(ie => ie.code)
+      .includes(je.import_code)
+  )
+
+  // Also only pay attention to import requests we have explicitly permitted a
+  // user to make
+  validJson = validJson.filter(
+    ve => permittedImportIds.all.includes(ve.id_hash)
+  )
+  return validJson
 }
 
 async function importSketch(importJson) {

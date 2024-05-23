@@ -149,6 +149,20 @@ cd out/make/deb/armv64/
 sudo apt install ./creative-coding-....deb
 ```
 
+After that, you should be able to run from the terminal:
+
+`creative-coding-showcase`
+
+If you need to remove a version and reinstall, then use:
+
+```
+sudo apt remove creative-coding-showcase`
+```
+
+When you update the code and re-make, remember to bump the `version` field
+in `package.json`. This is what apt uses to determine whether it is a new
+version or not.
+
 ## Set up keyboard shortcuts
 
 ### For rasbperry pi 4 "bullseye"
