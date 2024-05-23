@@ -100,6 +100,11 @@ The format of the file with a single object containing the following keys:
 * `"hideCursor"` (boolean): Whether or not to hide the cursor. For the
   Dewey cabinet, you probably want to show the cursor, but for the
   other two it doesn't make sense.
+* `"showSketchDropdown"` (boolean): Whether or not to show a dropdown
+  list of all the sketches in the app. This is convenient to see when 
+  you're testing because it allows you to quickly jump to a particular 
+  sketch, but should probably be hidden when the cabinets are being
+  shown.
 
 Here are the default values for the config file:
 
@@ -116,7 +121,8 @@ Here are the default values for the config file:
   "allowP5Imports": false,
   "importsURL": "http://0.0.0.0/imports",
   "permittedImportsIdPath": `[USER DOCUMENTS]/creative-coding-showcase/sketches/_permittedImportIds.json,
-  "hideCursor": true  
+  "hideCursor": true,
+  "showSketchDropdown": false,
 }
 ```
 
