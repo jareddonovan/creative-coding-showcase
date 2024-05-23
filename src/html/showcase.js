@@ -13,7 +13,7 @@ var opts = {
 
 let showcaseJson
 let importJson = {}
-let selectCover
+let selSketchCovers
 let ifm
 let divGallery
 let divMain
@@ -35,16 +35,13 @@ async function setup() {
   // is currently selected in the UI. The select element is hidden in the
   // running app, but if you uncomment the call to `hide()` below, it will be
   // visible and you can select the cover to show from there.
-  selectCover = createSelect()
-  selectCover.changed(handleCoverSelectionChanged)
-  selectCover.parent(select("main"))
-  selectCover.position(10, 10)
-  // sel.hide()
+  selSketchCovers = createSelect()
+  selSketchCovers.changed(handleCoverSelectionChanged)
+  selSketchCovers.parent(select("main"))
+  selSketchCovers.position(10, 10)
 
   divGallery = select("#gallery")
   divMain = select("main")
-
-  // If options have 
 
   window.electronAPI.onNextSketch(handleNextClicked)
   window.electronAPI.onPrevSketch(handlePrevClicked)
@@ -65,6 +62,12 @@ async function setup() {
     divMain.removeClass("hideCursor")
   }
 
+  // If options specify that the select dropdown should be shown
+  // (for debugging purposes)
+  if (opts.showSketchDropdown){ 
+    selSketchCovers.show()
+  }
+  
   // Set the debounceTime from the options.
   lastKp = -opts.debounceTime
   
@@ -177,9 +180,9 @@ function setSelectedCoverId(newId){
   newTarget.addClass("current")
   
   // TODO: Fix up which one is selected in the dropdown.
-  let newIdx = Array.from(selectCover.elt.options).findIndex(
+  let newIdx = Array.from(selSketchCovers.elt.options).findIndex(
     o => o.dataset.coverId === newId)
-  selectCover.elt.selectedIndex = newIdx
+  selSketchCovers.elt.selectedIndex = newIdx
   
   updateLinks()
   selectedCoverId = newId
@@ -190,7 +193,7 @@ function setSelectedCoverId(newId){
 // Update the location hash to include the currently selected index.
 //
 function updateLinks() {
-  let id = selectCover.elt.selectedOptions[0].dataset.coverId
+  let id = selSketchCovers.elt.selectedOptions[0].dataset.coverId
   window.location.hash = id
 }
 
@@ -299,7 +302,7 @@ function createCover(name, title, thumb, position){
   opt.text = name
   opt.dataset.coverId = coverId
 
-  selectCover.elt.add(opt, position)
+  selSketchCovers.elt.add(opt, position)
 
   let html = `<div class="name">${title}</div>`
   let div = createDiv(html)
@@ -326,7 +329,7 @@ function createCover(name, title, thumb, position){
 
 // Remove a previously created cover from the UI. So that it can be updated.
 function removeCover(coverId){
-  let opt = Array.from(selectCover.elt.options).find(
+  let opt = Array.from(selSketchCovers.elt.options).find(
     o => o.dataset.coverId === coverId)
 
   opt.parentNode.removeChild(opt)
@@ -467,7 +470,7 @@ function handleSelectClicked(skipDebounce){
     return
   }
 
-  let name = selectCover.value()
+  let name = selSketchCovers.value()
 
   // TODO: This is a hack to quickly get it working, but it will do for now.
   if (Object.hasOwn(showcaseJson, name)){
@@ -556,7 +559,7 @@ function loadSketch(name, displayName, sketchPath, shouldShowCursor){
 // Handle when the selection changes.
 //
 function handleCoverSelectionChanged(){
-  let id = selectCover.elt.selectedOptions[0].dataset.coverId
+  let id = selSketchCovers.elt.selectedOptions[0].dataset.coverId
   setSelectedCoverId(id)
 }
 
