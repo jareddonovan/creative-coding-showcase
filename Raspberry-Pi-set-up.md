@@ -50,6 +50,7 @@ gh auth login
 * Select dark mode.
 * Task bar at bottom
 * Solid color for background
+  * (green: huey, purple: dewey, orange: louie)
 * Darker shade of same color for window bar
 * Lighter shade of same color for taskbar
 * Remove waste basket and drives from desktop
