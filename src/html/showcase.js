@@ -36,9 +36,9 @@ async function setup() {
   // running app, but if you uncomment the call to `hide()` below, it will be
   // visible and you can select the cover to show from there.
   selSketchCovers = createSelect()
-  selSketchCovers.changed(handleCoverSelectionChanged)
+  selSketchCovers.hide()
   selSketchCovers.parent(select("main"))
-  selSketchCovers.position(10, 10)
+  selSketchCovers.changed(handleCoverSelectionChanged)
 
   divGallery = select("#gallery")
   divMain = select("main")
@@ -66,6 +66,7 @@ async function setup() {
   // (for debugging purposes)
   if (opts.showSketchDropdown){ 
     selSketchCovers.show()
+    selSketchCovers.position(10, 10)
   }
   
   // Set the debounceTime from the options.
