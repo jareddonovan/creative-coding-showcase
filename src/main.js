@@ -54,6 +54,7 @@ if (!fs.existsSync(configPath)){
     importsUrl: "http://0.0.0.0/imports",
     permittedImportIdsPath: `${defaultSketchesPath}/_permittedImportIds.json`,
     hideCursor: true,
+    showSketchDropdown: false
   }
 
   // Other commonly used dimensions. 1920 x 1080, 1280 x 720
@@ -112,7 +113,8 @@ const createWindow = () => {
   // Get any relevant boolean command-line arguments that were provided and
   // overwrite the values read from the configuration.
   for (let boolOpt of [
-    "fullscreen", "devTools", "fixCss", "allowP5jsImports", "hideCursor"
+    "fullscreen", "devTools", "fixCss", "allowP5jsImports",
+    "hideCursor", "showSketchDropdown"
   ]){
     if (app.commandLine.hasSwitch(boolOpt)){
       let optVal = app.commandLine.getSwitchValue(boolOpt)
@@ -134,7 +136,8 @@ const createWindow = () => {
   // Get any relevant string command-line arguments that were provided and
   // overwrite the values read from the configuration.
   for (let strOpt of [
-    "cabinetName", "sketchesPath", "importsUrl", "permittedImportIdsPath"]){
+    "cabinetName", "sketchesPath", "importsUrl", "permittedImportIdsPath"
+  ]){
     if (app.commandLine.hasSwitch(strOpt)){
       let optVal = app.commandLine.getSwitchValue(strOpt)
       cmdOpts[strOpt] = optVal
