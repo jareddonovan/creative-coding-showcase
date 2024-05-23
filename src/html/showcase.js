@@ -132,14 +132,16 @@ function createCoversFromJson(json, position){
   let newCoverId = ""
 
   for (const name of names){
+    console.log("json[name]._cabinet.split(','):", json[name]._cabinet.split(","))
+    
     if (json[name]._is_buggy){
       // console.log(`${name} _is_buggy => not adding`);
     } else if (!json[name]._has_confirmed) {
       // console.log(`${name} has not confirmed => not adding`);
     } else if (
-      // Where is 
+      // Check if the name matches, or is 'test'
       opts.cabinetName == "test" || 
-      json[name]._cabinet == opts.cabinetName
+      json[name]._cabinet.split(",").includes(opts.cabinetName) 
     ){
       newCoverId = createSketchCover(name, json, position)
       json[name].coverId = newCoverId
