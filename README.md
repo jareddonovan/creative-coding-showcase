@@ -36,7 +36,7 @@ directory (exact name will vary depending on your operating system).
 
 It works by loading p5js sketches in an
 [Electron](https://www.electronjs.org/) app. Since Electron is built on the
-chromium browser, it pretty much already has everything it needs to display a
+chromium browser, it has everything it needs to display a
 p5js sketch. By default, the showcase app looks for any
 p5js sketches in the following directory:
 
@@ -90,6 +90,16 @@ The format of the file with a single object containing the following keys:
   shown when the app runs. Useful for debugging.
 * `"sketchesPath"` (string): Location of the sketches path that should be
   loaded.
+* `"allowP5jsImports"` (boolean): If true then the showcase will allow
+  for sketches to be imported directly from the p5js editor. Requires
+  some additional setup (see below).
+* `"importsUrl"` (string): URL for a web page that will accept user
+  submissions of p5js editor sketches to import (see below).
+* `"permittedImportIdsPath"` (string): Path to a JSON which holds a
+  pre-defined list of IDs that you will allow imports from.
+* `"hideCursor"` (boolean): Whether or not to hide the cursor. For the
+  Dewey cabinet, you probably want to show the cursor, but for the
+  other two it doesn't make sense.
 
 Here are the default values for the config file:
 
@@ -103,6 +113,10 @@ Here are the default values for the config file:
   "fixCss": true,
   "devTools": true,
   "sketchesPath": "[USER DOCUMENTS]/creative-coding-showcase/sketches"
+  "allowP5Imports": false,
+  "importsURL": "http://0.0.0.0/imports",
+  "permittedImportsIdPath": `[USER DOCUMENTS]/creative-coding-showcase/sketches/_permittedImportIds.json,
+  "hideCursor": true  
 }
 ```
 
@@ -188,9 +202,8 @@ The sketch should not use the `CTRL+ALT+3` key combination when running on
 **quit** the showcase app.
 
 The showcase app also uses the CTRL and
-ALT keys to navigate left and right because these are commonly used in arcade
-cabinet hardware. However, if a sketch also uses these, it should not
-interfere.
+ALT keys to navigate left and right when in the gallery view. However,
+if a sketch also uses these, it should not interfere.
 
 Also note that if the showcase app is being used on the [Creative Coding
 Cabinets], then other hardware and input limitations may apply (e.g. only
@@ -205,42 +218,50 @@ joystick and button inputs are available on the 'Louie' cabinet). See the
 
 ## Installation
 
-Download or clone this repository. Install [Node](https://nodejs.org/en)
+Download or clone this repository. Install
+[Node](https://nodejs.org/en). I have built the app with node v20.13.1.
 
-In a terminal window, type the following command.
+In a terminal window, type the following commands to install the
+required libraries and start the showcase for the first run.
 
-`npm start`
+```
+npm install
+npm start
+```
 
-This will start the application with some example content you can use to test.
+This will start the application with some example content you can use
+to test. It will also generate a default `config.json` file in your
+system configuration directory, which you can edit to change how the
+showcase app works. You can exit the app from the menu, or by typing 
+CTRL+C from the terminal.
 
-## Adding sketches
-
-Copy the sketch folder to the `creative-coding-showcase/sketches` folder in
-your documents folder (or wherever you've configured this to be). 
-
-Also add an entry for the sketch into the `_links.json` file using the format
-described above. If I am preparing a large number of sketches, I use a simple
-script to generate this, but these are too custom to include here.
-
-## To run
-
-`npm start`
+## Command line switches
 
 To test with command-line switches (note - this doesn't seem to work on
 the raspberry pi)
 
 `./node_modules/.bin/electron main.js --SWITCH=VALUE`
 
-Supported command line switches and values are:
+Supported command line switches and values are the same as the
+`config.json` file options. This makes it easy to change the way the
+app runs without having to edit the config file.
 
-* `devTools [true | false]` - whether to show the chrome devtools window.
-  False by default.
-* `fixCss [true | false]` - whether to apply css fixes to sketch iframes.
-  True by default. Can be overridden on a sketch-by-sketch basis in the
-  configuration file.
-* `fullscreen [true | false]` - Whether to run fullscreen. True by default.
-* `cabinetName (any string, e.g. 'huey')` - Which cabinet's sketches to run. Any
-  string can be provided for the name. This is an easy way to switch
-  collections or specify which cabinet the app is running on.
+## Adding sketches
+
+Copy any sketch folders you want to add to the
+`creative-coding-showcase/sketches` folder in your documents folder
+(or wherever you've configured this to be). If sketches have been
+downloaded straight from the p5js website, they should work fine. If
+rely on external URLs (e.g. sketches using the ml5 library) they will
+only work if the showcase has an internet connection.
+
+Also add an entry for the sketch into the `_links.json` file using the
+format described above. If I am preparing a large number of sketches,
+I use a simple script to generate this, but these are too custom to
+include here.
+
+## Importing sketches
+
+TO BE ADDED.
 
 [Creative Coding Cabinets]: https://github.com/jareddonovan/creative-coding-cabinets
