@@ -50,6 +50,7 @@ gh auth login
 * Select dark mode.
 * Task bar at bottom
 * Solid color for background
+  * (green: huey, purple: dewey, orange: louie)
 * Darker shade of same color for window bar
 * Lighter shade of same color for taskbar
 * Remove waste basket and drives from desktop
@@ -101,8 +102,9 @@ sound are working. It can be handy to bookmark this in the raspberry pi browser.
 
 <https://editor.p5js.org/creativecoding/collections/idDLXfg-F>
 
-* For the sound, set the volume to about 75%. If it is all the way up,
-  the sound will drop out.
+* For the sound, it may be necessary to set the volume to about 75%.
+  On the USB speakers I purchased, If it is all the way up the sound
+  will drop out.
 
 ## Copy over sketches you want to show
 
@@ -121,6 +123,7 @@ cd ~/Documents/creative-coding-showcase
 # Copy the sketches back to the cabinet.
 rsync -av ./sketches/* user@cabinet:/home/user/Documents/creative-coding-showcase/sketches
 ```
+
 
 ## Install node and packages
 
@@ -143,8 +146,22 @@ Start the application to generate the config file so you can edit it.
 ```
 npm run make
 cd out/make/deb/armv64/
-sudo apt install creative-coding-....deb
+sudo apt install ./creative-coding-....deb
 ```
+
+After that, you should be able to run from the terminal:
+
+`creative-coding-showcase`
+
+If you need to remove a version and reinstall, then use:
+
+```
+sudo apt remove creative-coding-showcase`
+```
+
+When you update the code and re-make, remember to bump the `version` field
+in `package.json`. This is what apt uses to determine whether it is a new
+version or not.
 
 ## Set up keyboard shortcuts
 
@@ -188,6 +205,8 @@ command_showcase_start=creative-coding-showcase
 binding_showcase_quit=<ctrl> <alt> KEY_3
 command_showcase_quit=killall creative-coding-showcase
 ```
+
+You probably also want to comment out (#) all the other entries.
 
 ## Get rid of the mouse cursor if necessary
 

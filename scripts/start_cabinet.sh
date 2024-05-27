@@ -1,4 +1,4 @@
 #!/bin/bash
 
-cd /home/jared/Documents/coding/creative-coding-showcase
+cd /home/user/Documents/coding/creative-coding-showcase
 npm start

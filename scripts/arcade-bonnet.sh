@@ -117,7 +117,11 @@ apt-get update
 
 echo "Installing Python libraries..."
 apt-get install -y python3-pip
-pip3 install evdev smbus
+# For raspberry pi 4 or below uncomment the following.
+# pip3 install evdev smbus
+# For raspberry pi 5 (bookworm) use the following.
+apt install python3-evdev
+apt install python3-smbus
 
 echo "Installing Adafruit code in /boot..."
 # Comment out the fetching of the arcadeBonnet.py script because we will use

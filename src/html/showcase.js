@@ -5,18 +5,24 @@
  * Jared Donovan 2024.
  */
 
-let opts = {
+// opts needs to be declared as a 'var' so it's available 
+// to child pages.
+var opts = {
   debounceTime: 100
 }
-let json
-let sel
+
+let showcaseJson
+let importJson = {}
+let selSketchCovers
 let ifm
 let divGallery
 let divMain
 let isShowingGallery = true
-let currIdx = 0
-// let numSlides = 0
+let selectedCoverId = null
+let nextCoverIdNum = 0
 let lastKp = -opts.debounceTime
+
+
 
 /////////////////////////////////////////////////
 //
@@ -25,8 +31,14 @@ let lastKp = -opts.debounceTime
 async function setup() {
   noCanvas()
 
-  sel = createSelect()
-  sel.changed(handleSelChanged)
+  // This select is just used as a way of conveniently recording which cover
+  // is currently selected in the UI. The select element is hidden in the
+  // running app, but if you uncomment the call to `hide()` below, it will be
+  // visible and you can select the cover to show from there.
+  selSketchCovers = createSelect()
+  selSketchCovers.hide()
+  selSketchCovers.parent(select("main"))
+  selSketchCovers.changed(handleCoverSelectionChanged)
 
   divGallery = select("#gallery")
   divMain = select("main")
@@ -35,6 +47,7 @@ async function setup() {
   window.electronAPI.onPrevSketch(handlePrevClicked)
   window.electronAPI.onSelect(handleSelectClicked)
   window.electronAPI.onBack(handleBackClicked)
+  window.electronAPI.onImportSketch(handleImportSketch)
 
   window.electronAPI.setName({
     name: "creative-coding-showcase", 
@@ -44,53 +57,99 @@ async function setup() {
   let newOpts = await window.electronAPI.getOpts()
   opts = {...newOpts}
 
+  // If options specify that the cursor should not be hidden
+  if (!opts.hideCursor){
+    divMain.removeClass("hideCursor")
+  }
+
+  // If options specify that the select dropdown should be shown
+  // (for debugging purposes)
+  if (opts.showSketchDropdown){ 
+    selSketchCovers.show()
+    selSketchCovers.position(10, 10)
+  }
+  
   // Set the debounceTime from the options.
   lastKp = -opts.debounceTime
   
-  // Fetch the json for the sketches
+  // Fetch the json for the sketches already included in the showcase
   console.log(
     `Fetching configuration json from: ${opts.sketchesPath}/_links.json`)
-  const response = await fetch(`${opts.sketchesPath}/_links.json`)
-  json = await response.json()
+  const showcaseResponse = await fetch(`${opts.sketchesPath}/_links.json`)
+  showcaseJson = await showcaseResponse.json()
 
-  // Create an 'end' slide 
-  createEndSlide()
-
-  const names = Object.keys(json).sort()
-
-  let slideIdx = 0
-  for (const name of names){
-    if (json[name]._is_buggy){
-      // console.log(`${name} _is_buggy => not adding`);
-    } else if (!json[name]._has_confirmed) {
-      // console.log(`${name} has not confirmed => not adding`);
-    } else if (opts.cabinetName == "test" || 
-      json[name]._cabinet == opts.cabinetName){
-      sel.option(name)
-      createSlide(name, slideIdx)
-      slideIdx += 1
+  // Also fetch additional json for imported sketches if options indicate
+  if (opts.allowP5jsImports){
+    try {
+      console.log(
+        `Fetching import json from: ${opts.sketchesPath}/_imports/_links.json`)
+      const importResponse = await fetch(
+        `${opts.sketchesPath}/_imports/_links.json`)
+      importJson = await importResponse.json()
+    } catch (e) {
+      console.error("error fetching links json: ", e)
     }
   }
-  // numSlides = slideIdx
-  
-  createEndSlide()
 
-  sel.parent(select("main"))
-  sel.hide()
+  // Create a 'bookend' cover for the start.
+  createBookendCover()
+
+  // If specified in options, create cover for import sketch functionality.
+  if (opts.allowP5jsImports){
+    createImportCover()
+  }
+
+  // Add the additional imported sketches if options indicate
+  if (opts.allowP5jsImports){
+    createCoversFromJson(importJson)
+  }
+  
+  createCoversFromJson(showcaseJson)
+
+  // numCovers = coverIdx
+  
+  // Create a 'bookend' cover for the end.
+  createBookendCover()
 
   // Check if there is an index provided in the hash
   // This allows us to 'remember' which index is selected.
   let hash = window.location.hash.split("?")[0]
-  let hashIdx = hash.match(/#(\d*)$/)
-  if (hashIdx){
-    hashIdx = parseInt(hashIdx[1])
-    if (!isNaN(hashIdx)){
-      currIdx = hashIdx
-    }
-  } 
-  setCurrIndex(currIdx)
-  
+  let hashId = hash.match(/^#(?<id>cover-\d*)$/)
+  hashId = hashId?.groups?.id
+  if (hashId && document.querySelector(`#${hashId}`)){
+    setSelectedCoverId(hashId)
+  } else {
+    // Set the selected cover to be the first 
+    let covers = select("#covers")
+    selectedCoverId = covers.elt.children[1].id
+    setSelectedCoverId(selectedCoverId)
+  }
+
   updateUI()
+}
+
+function createCoversFromJson(json, position){
+  const names = Object.keys(json).sort()
+  let newCoverId = ""
+
+  for (const name of names){
+    console.log("json[name]._cabinet.split(','):", json[name]._cabinet.split(","))
+    
+    if (json[name]._is_buggy){
+      // console.log(`${name} _is_buggy => not adding`);
+    } else if (!json[name]._has_confirmed) {
+      // console.log(`${name} has not confirmed => not adding`);
+    } else if (
+      // Check if the name matches, or is 'test'
+      opts.cabinetName == "test" || 
+      json[name]._cabinet.split(",").includes(opts.cabinetName) 
+    ){
+      newCoverId = createSketchCover(name, json, position)
+      json[name].coverId = newCoverId
+    }
+  }
+  
+  return newCoverId
 }
 
 /////////////////////////////////////////////////
@@ -113,20 +172,24 @@ function updateUI(){
 //
 // Set the currently selected sketch.
 //
-function setCurrIndex(newIdx){
-  if (newIdx >= 0 && newIdx < sel.elt.options.length){
-    let oldTarget = select(`#slide-${currIdx}`)
+function setSelectedCoverId(newId){
+  let oldTarget = select(`#${selectedCoverId}`)
+  if (oldTarget){
     oldTarget.removeClass("current")
-    let newTarget = select(`#slide-${newIdx}`)
-    let behavior = "auto"
-    let scrollOpts = {behavior, block: "center", inline: "center"}
-    newTarget.elt.scrollIntoView(scrollOpts)
-    newTarget.addClass("current")
-    
-    sel.elt.selectedIndex = newIdx
-    updateLinks()
-    currIdx = newIdx
   }
+  let newTarget = select(`#${newId}`)
+  let behavior = "auto"
+  let scrollOpts = {behavior, block: "center", inline: "center"}
+  newTarget.elt.scrollIntoView(scrollOpts)
+  newTarget.addClass("current")
+  
+  // TODO: Fix up which one is selected in the dropdown.
+  let newIdx = Array.from(selSketchCovers.elt.options).findIndex(
+    o => o.dataset.coverId === newId)
+  selSketchCovers.elt.selectedIndex = newIdx
+  
+  updateLinks()
+  selectedCoverId = newId
 }
 
 /////////////////////////////////////////////////
@@ -134,8 +197,8 @@ function setCurrIndex(newIdx){
 // Update the location hash to include the currently selected index.
 //
 function updateLinks() {
-  let idx = sel.elt.selectedIndex
-  window.location.hash = idx
+  let id = selSketchCovers.elt.selectedOptions[0].dataset.coverId
+  window.location.hash = id
 }
 
 /////////////////////////////////////////////////
@@ -179,45 +242,125 @@ function isDebouncing(){
 //
 // Get the different parts of the name (first, second).
 //
-function getNameParts(name){
-  return {
-    firstName: json[name].first_name,
-    lastName: json[name].last_name
-  }
+// function getNameParts(name){
+//   return {
+//     firstName: showcaseJson[name].first_name,
+//     lastName: showcaseJson[name].last_name
+//   }
+// }
+
+/////////////////////////////////////////////////
+//
+// Create a cover for the sketch based on the json info for the given name.
+//
+function createSketchCover(name, json, position){
+  // let {firstName, lastName} = getNameParts(name)
+  // let title = `${firstName} ${lastName}`
+  let title = name
+  let thumb = `${opts.sketchesPath}/${json[name].thumb}`
+
+  let newCoverId = createCover(name, title, thumb, position)
+
+  return newCoverId
 }
 
 /////////////////////////////////////////////////
 //
-// Create a slide based on the json info for the given name.
+// Create a cover to import a sketch from the p5js library
+// This should only be shown if the option 'allowP5jsImports' has been set
 //
-function createSlide(name, idx){
-  let {firstName, lastName} = getNameParts(name)
-  let thumb = json[name].thumb
-  let html = `<div class="name">${firstName} ${lastName}</div>`
+function createImportCover(){
+  let thumb = "./import/thumb.png"
+  let name = "Import Sketch"
+  let title = name
 
-  let div = createDiv(html)
-  div.attribute("style", 
-    `background-image: url("${opts.sketchesPath}/${thumb}");`)
-  div.addClass("slide")
-  div.id(`slide-${idx}`)
-  let slides = select("#slides")
-  div.parent(slides)
-  div.mouseClicked(() => {
-    setCurrIndex(idx)
-  })
+  let newCoverId = createCover(name, title, thumb)
+
+  return newCoverId
 }
 
 /////////////////////////////////////////////////
 //
-// Create a slide at the end of the gallery.
-// I *think* this is for layout purposes.
+// Create a 'bookend' cover at the start/end of the gallery.
+// This is just for layout purposes.
+// TODO: There is undoubtedly a better way to do this using just css!
 //
-function createEndSlide(){
+function createBookendCover(){
   let div = createDiv("end")
-  div.addClass("slide")
+  div.addClass("cover")
   div.addClass("end")
-  let slides = select("#slides")
-  div.parent(slides)
+  let covers = select("#covers")
+  div.parent(covers)
+}
+
+/////////////////////////////////////////////////
+//
+// Helper function to create a cover given the provided info.
+// If path to thumb is not included, then it is not added.
+// 
+function createCover(name, title, thumb, position){
+  let coverId = getNextCoverId()
+
+  let opt = document.createElement("option")
+  opt.value = name
+  opt.text = name
+  opt.dataset.coverId = coverId
+
+  selSketchCovers.elt.add(opt, position)
+
+  let html = `<div class="name">${title}</div>`
+  let div = createDiv(html)
+  div.addClass("fade-in")
+  if (thumb){
+    div.attribute("style", 
+      `background-image: url("${thumb}?d=${Date.now()}");`)
+  }
+  div.addClass("cover")
+
+  div.id(coverId)
+  let covers = select("#covers")
+
+  //div.parent(covers)
+
+  covers.elt.insertBefore(div.elt, covers.elt.children[position + 1])
+
+  div.mouseClicked(() => {
+    setSelectedCoverId(coverId)
+  })
+
+  return coverId
+}
+
+// Remove a previously created cover from the UI. So that it can be updated.
+function removeCover(coverId){
+  let opt = Array.from(selSketchCovers.elt.options).find(
+    o => o.dataset.coverId === coverId)
+
+  opt.parentNode.removeChild(opt)
+
+  let div = document.querySelector(`#${coverId}`)
+  let covers = select("#covers")
+  covers.elt.removeChild(div)
+
+  // TODO: Figure out what should happen to the selection, if the removed 
+  // cover was the currently selected one.
+}
+
+// Return the currently selected cover id
+function getSelectedCover(){
+  return document.querySelector(`#${selectedCoverId}`)
+}
+
+// Return the number of covers currently loaded
+function getNumCovers(){
+  let covers = document.querySelector("#covers")
+  return covers.children.length - 2
+}
+
+function getNextCoverId(){
+  let coverId = `cover-${nextCoverIdNum}`
+  nextCoverIdNum += 1
+  return coverId
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -230,8 +373,17 @@ function createEndSlide(){
 // Handle when the 'next' menu item is clicked.
 //
 function handleNextClicked(numToMove){
-  let nextIdx = min(currIdx + numToMove, sel.elt.options.length - 1)
-  setCurrIndex(nextIdx)
+  // let nextIdx = min(currIdx + numToMove, selectCover.elt.options.length -
+  // 1)
+  
+  let currDiv = getSelectedCover()
+  let nextIdx = Array.from(
+    currDiv.parentNode.children).indexOf(currDiv) + numToMove
+
+  nextIdx = min(nextIdx, currDiv.parentNode.children.length - 2)
+  let nextDiv = currDiv.parentNode.children[nextIdx]
+
+  setSelectedCoverId(nextDiv.id)
 }
 
 /////////////////////////////////////////////////
@@ -239,8 +391,16 @@ function handleNextClicked(numToMove){
 // Handle when the prev menu item is clicked.
 //
 function handlePrevClicked(numToMove){
-  let prevIdx = max(0, currIdx - numToMove)
-  setCurrIndex(prevIdx)
+  // let prevIdx = max(0, currIdx - numToMove)
+
+  let currDiv = getSelectedCover()
+  let prevIdx = Array.from(
+    currDiv.parentNode.children).indexOf(currDiv) - numToMove
+
+  prevIdx = max(prevIdx, 1)
+  let prevDiv = currDiv.parentNode.children[prevIdx]
+
+  setSelectedCoverId(prevDiv.id)
 }
 
 /////////////////////////////////////////////////
@@ -266,6 +426,47 @@ function handleBackClicked(){
 
 /////////////////////////////////////////////////
 //
+// Handle when there is a new sketch to import
+//
+function handleImportSketch(json){
+  console.log("handleImportSketch():", json)
+
+  let names = Object.keys(json)
+
+  // Handle the case where a version of the sketch is already in the
+  // importJson
+  for (let n of names){
+    let wasSelected = false
+
+    if (Object.hasOwn(importJson, n)){
+      console.log("Remove old cover and create a new one.")
+      let oldCoverId = importJson[n].coverId
+
+      // First check whether the old cover was selected
+      let oldCoverDiv = document.querySelector(`#${oldCoverId}`)
+      if (oldCoverDiv.classList.contains("current")){
+        console.log("The old cover was selected!")
+        wasSelected = true
+      }
+
+      removeCover(oldCoverId)
+    } 
+    // Add the new json into the json list and create a new cover for it
+    importJson[n] = json[n]
+    let jsonFragment = {}
+    jsonFragment[n] = json[n]
+    // Add the new cover at the start, after the importJSON sketch.
+    let newCoverId = createCoversFromJson(jsonFragment, 1)
+    importJson[n].coverId = newCoverId
+
+    if (wasSelected){
+      setSelectedCoverId(newCoverId)
+    }
+  }
+}
+
+/////////////////////////////////////////////////
+//
 // Handle when the select menu item is clicked.
 //
 function handleSelectClicked(skipDebounce){
@@ -273,16 +474,52 @@ function handleSelectClicked(skipDebounce){
     return
   }
 
-  let name = sel.value()
-  let {firstName, lastName} = getNameParts(name)
+  let name = selSketchCovers.value()
 
+  // TODO: This is a hack to quickly get it working, but it will do for now.
+  if (Object.hasOwn(showcaseJson, name)){
+    showSketch(name, showcaseJson)
+  } else if (Object.hasOwn(importJson, name)){
+    showSketch(name, importJson)
+  } else if (name === "Import Sketch"){
+    showImportSketch(name)
+  } else {
+    console.log("Don't know sketch: ", name)
+  }
+}
+
+// Load the 'Import Sketch' sketch into the frame.
+function showImportSketch(name){
+  console.log("showImportSketch()")
+
+  let displayName = name
+  let sketchPath = "import/index.html"
+
+  loadSketch(name, displayName, sketchPath, true)
+}
+  
+// Show the specified sketch (from the showcase) in the frame. 
+function showSketch(name, json){
+
+  // let {firstName, lastName} = getNameParts(name)
+  // let displayName = `${firstName} ${lastName}`
+
+  let displayName = name
+  let sketchUrl = json[name].sketch 
+  let sketchPath = `${opts.sketchesPath}/${sketchUrl}` 
+  let shouldShowCursor = json[name]._show_cursor === true
+
+  console.log("sketchPath", sketchPath)
+
+  loadSketch(name, displayName, sketchPath, shouldShowCursor)
+}
+
+// Helper to load a sketch into the frame (import, or showcase)
+function loadSketch(name, displayName, sketchPath, shouldShowCursor){
   window.electronAPI.setName({
     name, 
-    displayName: `${firstName} ${lastName}`})
-  let sketchUrl = json[name].sketch
-  let d = new Date().toISOString()
-
-  let shouldShowCursor = json[name]._show_cursor === true
+    displayName
+  })
 
   ifm = createElement("iframe")
   // ifm.attribute('scrolling', 'no');
@@ -314,7 +551,7 @@ function handleSelectClicked(skipDebounce){
       checkRunning(ifm)
     }
   }
-  ifm.attribute("src", `${opts.sketchesPath}/${sketchUrl}?d=${d}`)
+  ifm.attribute("src", `${sketchPath}?d=${Date.now()}`)
   ifm.parent("#main")
 
   isShowingGallery = false
@@ -325,10 +562,9 @@ function handleSelectClicked(skipDebounce){
 //
 // Handle when the selection changes.
 //
-function handleSelChanged(){
-  // console.log(sel.value(), sel.elt.selectedIndex);
-  let idx = sel.elt.selectedIndex
-  setCurrIndex(idx)
+function handleCoverSelectionChanged(){
+  let id = selSketchCovers.elt.selectedOptions[0].dataset.coverId
+  setSelectedCoverId(id)
 }
 
 /////////////////////////////////////////////////
