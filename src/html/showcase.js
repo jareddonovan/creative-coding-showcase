@@ -93,20 +93,21 @@ async function setup() {
 
   // Create a 'bookend' cover for the start.
   createBookendCover()
-  createCoversFromJson(showcaseJson)
 
-  // Also add the additional json if options indicate
-  if (opts.allowP5jsImports){
-    createCoversFromJson(importJson)
-  }
-
-  // numCovers = coverIdx
-  
   // If specified in options, create cover for import sketch functionality.
   if (opts.allowP5jsImports){
     createImportCover()
   }
 
+  // Add the additional imported sketches if options indicate
+  if (opts.allowP5jsImports){
+    createCoversFromJson(importJson)
+  }
+  
+  createCoversFromJson(showcaseJson)
+
+  // numCovers = coverIdx
+  
   // Create a 'bookend' cover for the end.
   createBookendCover()
 
@@ -454,8 +455,8 @@ function handleImportSketch(json){
     importJson[n] = json[n]
     let jsonFragment = {}
     jsonFragment[n] = json[n]
-    // Add the new cover one before the end.
-    let newCoverId = createCoversFromJson(jsonFragment, getNumCovers() - 1)
+    // Add the new cover at the start, after the importJSON sketch.
+    let newCoverId = createCoversFromJson(jsonFragment, 1)
     importJson[n].coverId = newCoverId
 
     if (wasSelected){
