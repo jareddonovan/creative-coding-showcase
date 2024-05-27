@@ -7,12 +7,14 @@
 * H3: Huey - in the cabinet - spare. Haven't tested.
 
 * D1: Dewey - in the spare rpi 4. Haven't tested.
-* D2: Dewey - in the cabinet - spare. Haven't tested.
-* D3: Dewey - in the cabinet rpi 5. Works.
+* D2: Dewey - in the cabinet - spare 1. Haven't tested.
+* D3: Dewey - in the cabinet - spare 2. Works.
+* D4: Dewey - in the pi5 in the cabinet. 64Gb and fast card. Works very well.
 
 * L1: Louie - in the spare pi4. Haven't tested.
-* L2: Louie - not working.
+* L2: Louie - not working. This is a bad SD card.
 * L3: Louie - in the cabinet rpi5. Works.
+* L4: Louie - in the pi5 in the cabinet. 64Gb and fast card. Works very well.
 
 ## Raspberry pi 5 power button fix notes
 
