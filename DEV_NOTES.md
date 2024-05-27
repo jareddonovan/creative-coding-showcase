@@ -1,5 +1,19 @@
 # DEV NOTES
 
+## Troubleshooting SD cards notes
+
+* H1: Huey - in the spare rpi 4. Haven't tested.
+* H2: Huey - in the cabinet rpi 5. Works.
+* H3: Huey - in the cabinet - spare. Haven't tested.
+
+* D1: Dewey - in the spare rpi 4. Haven't tested.
+* D2: Dewey - in the cabinet - spare. Haven't tested.
+* D3: Dewey - in the cabinet rpi 5. Works.
+
+* L1: Louie - in the spare pi4. Haven't tested.
+* L2: Louie - not working.
+* L3: Louie - in the cabinet rpi5. Works.
+
 ## Raspberry pi 5 power button fix notes
 
 On the raspberry pi 5, there is a power button which should allow the user to
