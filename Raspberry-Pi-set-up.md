@@ -207,7 +207,8 @@ binding_showcase_quit=<ctrl> <alt> KEY_3
 command_showcase_quit=killall creative-coding-showcase
 ```
 
-You probably also want to comment out (#) all the other entries.
+You probably also want to comment out (#) the other entries, EXCEPT - don't 
+comment out the ones related to the power key, if you want to use that.
 
 ## Get rid of the mouse cursor if necessary
 
