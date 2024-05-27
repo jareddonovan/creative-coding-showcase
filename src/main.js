@@ -222,9 +222,11 @@ const createWindow = () => {
 
     win.webContents.send("import-sketch", importJson)
 
-    // setTimeout(checkForImports, 60000)
+    setTimeout(checkForImports, 60000)
   }
-  // checkForImports()
+  if (cmdOpts.allowP5jsImports){
+    checkForImports()
+  }
 
   // Watch for ESC key events so that we can cancel the currently running
   // sketch and return to the showcase.
@@ -311,7 +313,7 @@ const createWindow = () => {
 // Function to filter json list returned by request to importUrl/index.php
 // so that it only includes entries that we have generated the import code for
 // and that come from a permitted user id on our list of ids.
-function filterImportJson(){
+function filterImportJson(json){
   // First filter by valid import codes.
   let validJson = json.filter(
     je => importCodes.filter(ie => !ie.isImported).map(ie => ie.code)
