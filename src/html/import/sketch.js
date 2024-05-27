@@ -364,8 +364,8 @@ function positionOnCanvas(elem, x, y, w, h){
   let cY = cnv.elt.offsetTop
 
   elem.style("position", "absolute")
-  elem.style("left", `${x}px`)
-  elem.style("top", `${y}px`) 
+  elem.style("left", `${x + cX}px`)
+  elem.style("top", `${y + cY}px`) 
   if (w){
     elem.style("width", `${w}px`)
   }
