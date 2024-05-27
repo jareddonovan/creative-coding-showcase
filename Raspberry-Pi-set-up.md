@@ -135,6 +135,17 @@ cd ~/Documents/coding/creative-coding-showcase
 npm install
 ```
 
+Alternatively, you can use `nvm`. Follow the instructions here: 
+
+* <https://github.com/nvm-sh/nvm?tab=readme-ov-file#installing-and-updating>
+
+...and then (from the creative coding showcase code directory):
+  
+```
+nvm install v20.13.1
+nvm use
+```
+
 # Test app and edit config
 
 Start the application to generate the config file so you can edit it.
@@ -228,7 +239,7 @@ and add the following line to the end: `@unclutter -idle 10`
 
 If you want it to start automatically also do this:
 
-`cp scripts/autostart.desktop` to `/etc/xdg/autostart/autostart.desktop`
+`sudo cp scripts/autostart.desktop` to `/etc/xdg/autostart/autostart.desktop`
 
 ## Add startup image
 
@@ -244,5 +255,14 @@ The following forum thread looked promising)
 I followed the advice on there to try the following command, which worked:
 
 `sudo plymouth-set-default-theme --rebuild-initrd pix`
+
+## Other notes
+
+* I would also like to get the ml5 data and models server working on the
+  cabinets.
+  * <https://github.com/ml5js/ml5-data-and-models-server>
+  * The ml5 data and models server is built using node v12.
+  
+
 
 [Creative Coding Cabinets]: https://github.com/jareddonovan/creative-coding-cabinets
