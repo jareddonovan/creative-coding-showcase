@@ -55,6 +55,7 @@ gh auth login
 * Lighter shade of same color for taskbar
 * Remove waste basket and drives from desktop
 * Set font size of terminal and desktop to 14pt
+* Set code editor preferences (col width to 80)
 * Set mouse size to medium
 * In raspi configuration
   * Untick the option for screen blanking
