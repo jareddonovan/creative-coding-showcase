@@ -1,5 +1,102 @@
 # DEV NOTES
 
+## Testing that camera works on pi
+
+I have the raspberry pi camera module 3, wide.
+
+To test that the camera is working on the pi (but not necessarily in the
+browser), use: `libcamera-hello`. This will open a window with a feed of the
+camera. It will close after a few seconds. You an also use `rpicam-vid`, which
+does much the same thing.
+
+The camera module appears to be working fine based on this.
+
+## Getting raspberry pi camera module working as a webcam on chromium.
+
+Sketch for testing webcam in the browser:
+
+* <https://editor.p5js.org/creativecoding/sketches/bBltPXx2A>
+
+Support for it is added to firefox and the sketch above works fine. 
+
+Chromium does not. I haven't been able to find whether there's an open issue or
+bug tracking this yet, but will look into it. It may be related to one or more
+of these keywords: 
+
+* bcm2835-v412 - the kernel module for the camera module?
+* CSI cameras - generic name for the cameras?
+* pipewire - a low level multimedia framework for linux.
+
+
+## GStreamer workaround
+
+A work around was the use of `gstreamer` mentioned on the following page. The
+reply is about half way down from user **MattO**. They mention that a
+limitation is that chromium doesn't have access to the camera controls, but
+otherwise, works fine:
+
+* <https://forums.raspberrypi.com/viewtopic.php?t=359204>
+
+That appears to have worked for me too. I followed the following steps:
+
+First install gstreamer and plugins, then the loopback
+
+```
+sudo apt-get install -y gstreamer1.0-tools gstreamer1.0-plugins gstreamer1.0-libcamera
+sudo apt-get install -y v4l2loopback-dkms
+
+```
+
+Then create a conf file which activates the loopback modle on startup:
+
+```
+sudo nano /etc/modules-load.d/v4l2loopback.conf
+```
+
+The file contains the following
+
+```
+v4l2loopback
+```
+
+Then create a conf file for the virtual camera device:
+
+```
+sudo nano /etc/modprobe.d/v4l2loopback.conf
+```
+
+With the following content. They mention that `video_nr` should not collide
+with any video devices present. Check this with `ls /dev/`.
+
+```
+options v4l2loopback video_nr=10
+options v4l2loopback card_label="Chromium device"
+options v4l2loopback exclusive_caps=1
+```
+
+After reboot, the camera loopback can be launched with the following command.
+Make sure `device` matches `video_nr` from above:
+
+```
+gst-launch-1.0 libcamerasrc ! "video/x-raw,width=1280,height=1080,format=YUY2",interlace-mode=progressive ! videoconvert ! v4l2sink device=/dev/video10
+
+```
+
+I added that line to a script, which I created in the scripts folder called
+`launch_video_loopback.sh`. I then added the script to the crontab.
+
+```
+sudo crontab -e
+```
+
+With the following line:
+
+```
+@reboot /home/USER/Documents/coding/creative-coding-showcase/scripts/launch_video_loopback.sh
+```
+
+
+
 ## Troubleshooting SD cards notes
 
 * H1: Huey - in the spare rpi 4. Haven't tested.
