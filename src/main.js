@@ -33,10 +33,10 @@ let userDataPath = app.getPath("userData")
 let configPath = path.join(userDataPath, "config.json")
 
 // Look for a config file in the documents directory
-if (!fs.existsSync(configPath)){
+if (!fs.existsSync(configPath)) {
   // Get the default path for the location of the sketches directory
   let documentsPath = app.getPath("documents")
-  let defaultSketchesPath  = path.join(
+  let defaultSketchesPath = path.join(
     documentsPath, "creative-coding-showcase", "sketches")
 
   // Default configuration options. 
@@ -60,43 +60,42 @@ if (!fs.existsSync(configPath)){
   // Other commonly used dimensions. 1920 x 1080, 1280 x 720
 
   console.log("Config file does not exist => creating.")
-  fs.writeFileSync(configPath, 
-    JSON.stringify(defaultOpts, undefined, 2), {encoding: "utf8"})
+  fs.writeFileSync(configPath,
+    JSON.stringify(defaultOpts, undefined, 2), { encoding: "utf8" })
 }
 
 // Read the configuration file in.
 console.log(`Reading config file from:\n\t${configPath}`)
-let cmdOpts = JSON.parse(fs.readFileSync(configPath, {encoding: "utf8"}))
+let cmdOpts = JSON.parse(fs.readFileSync(configPath, { encoding: "utf8" }))
 
 // Check that the version recorded in the configuration file matches the app
 // version and issue a warning if not.
-if (cmdOpts.version != app.getVersion()){
+if (cmdOpts.version != app.getVersion()) {
   console.log(
-    `\nWARNING: Configuration version does not match app version: config:${
-      cmdOpts.version} => app:${app.getVersion()
+    `\nWARNING: Configuration version does not match app version: config:${cmdOpts.version} => app:${app.getVersion()
     }\n`)
 }
 cmdOpts.version = app.getVersion()
 
 // Add a blank _links.json file for the showcase sketches and for any import
 // (if indicated in settings)
-if (!fs.existsSync(`${cmdOpts.sketchesPath}/_links.json`)){
-  fs.writeFileSync(`${cmdOpts.sketchesPath}/_links.json`, 
-    JSON.stringify({}, undefined, 4), {encoding: "utf-8", recursive: true})
+if (!fs.existsSync(`${cmdOpts.sketchesPath}/_links.json`)) {
+  fs.writeFileSync(`${cmdOpts.sketchesPath}/_links.json`,
+    JSON.stringify({}, undefined, 4), { encoding: "utf-8", recursive: true })
 }
 
-if (cmdOpts.allowP5jsImports && 
-  !fs.existsSync(`${cmdOpts.sketchesPath}/_imports/_links.json`)){
-  fs.mkdirSync(`${cmdOpts.sketchesPath}/_imports/`, {recursive: true})
-  fs.writeFileSync(`${cmdOpts.sketchesPath}/_imports/_links.json`, 
-    JSON.stringify({}, undefined, 4), {encoding: "utf-8", recursive: true})
+if (cmdOpts.allowP5jsImports &&
+  !fs.existsSync(`${cmdOpts.sketchesPath}/_imports/_links.json`)) {
+  fs.mkdirSync(`${cmdOpts.sketchesPath}/_imports/`, { recursive: true })
+  fs.writeFileSync(`${cmdOpts.sketchesPath}/_imports/_links.json`,
+    JSON.stringify({}, undefined, 4), { encoding: "utf-8", recursive: true })
 }
 
 
 // Handler to provide the options that the app is running with. This allows
 // the showcase.js app to access the config/command-line options.
 function handleGetOpts() {
-  return cmdOpts  
+  return cmdOpts
 }
 
 // This function will generate a new id for use to request a p5js sketch be
@@ -105,7 +104,7 @@ function handleGenerateImportCode() {
   let rawCode = Date.now() + ""
   let newImportCode = (CRC32.str(rawCode, 0) >>> 0).toString(32)
 
-  importCodes.push({code: newImportCode, isImported: false})
+  importCodes.push({ code: newImportCode, isImported: false })
   return newImportCode
 }
 
@@ -115,38 +114,38 @@ const createWindow = () => {
   for (let boolOpt of [
     "fullscreen", "devTools", "fixCss", "allowP5jsImports",
     "hideCursor", "showSketchDropdown"
-  ]){
-    if (app.commandLine.hasSwitch(boolOpt)){
+  ]) {
+    if (app.commandLine.hasSwitch(boolOpt)) {
       let optVal = app.commandLine.getSwitchValue(boolOpt)
       cmdOpts[boolOpt] = optVal === "true"
-    }  
+    }
   }
 
   // Get any relevant integer command-line arguments that were provided and
   // overwrite the values read from the configuration.
-  for (let intOpt of ["width", "height", "debounceTime"]){
-    if (app.commandLine.hasSwitch(intOpt)){
+  for (let intOpt of ["width", "height", "debounceTime"]) {
+    if (app.commandLine.hasSwitch(intOpt)) {
       let optVal = Number.parseInt(app.commandLine.getSwitchValue(intOpt))
-      if (!isNaN(optVal)){
+      if (!isNaN(optVal)) {
         cmdOpts[intOpt] = optVal
       }
     }
-  }  
+  }
 
   // Get any relevant string command-line arguments that were provided and
   // overwrite the values read from the configuration.
   for (let strOpt of [
     "cabinetName", "sketchesPath", "importsUrl", "permittedImportIdsPath"
-  ]){
-    if (app.commandLine.hasSwitch(strOpt)){
+  ]) {
+    if (app.commandLine.hasSwitch(strOpt)) {
       let optVal = app.commandLine.getSwitchValue(strOpt)
       cmdOpts[strOpt] = optVal
     }
   }
 
   // Read in the permittedImportIdsPath if appropriate
-  if (cmdOpts.allowP5jsImports 
-    && fs.existsSync(cmdOpts.permittedImportIdsPath)){
+  if (cmdOpts.allowP5jsImports
+    && fs.existsSync(cmdOpts.permittedImportIdsPath)) {
     console.log(
       `Reading permitted import ids from:\n\t${cmdOpts.permittedImportIdsPath}`)
     permittedImportIds = JSON.parse(
@@ -155,7 +154,7 @@ const createWindow = () => {
 
   // Print out the cmdOpts so we can check that we're getting what we expect.
   console.log("creating window with cmdOpts:\n", cmdOpts)
-  
+
   const win = new BrowserWindow({
     title: defaultTitle,
     icon: "images/cabinet-128.png",
@@ -165,7 +164,7 @@ const createWindow = () => {
     webPreferences: {
       preload: path.join(__dirname, "preload.js")
     }
-  })  
+  })
 
   // TODO: Set kiosk mode to true if we're in fullscreen mode.
   //       Kiosk mode is poorly documented in electron, so this requires
@@ -181,7 +180,7 @@ const createWindow = () => {
   // based on which sketch is currently showing.
   ipcMain.on("set-name", handleSetName)
 
-  function handleSetName (event, nameData) {
+  function handleSetName(event, nameData) {
     const webContents = event.sender
     const win = BrowserWindow.fromWebContents(webContents)
     currentName = nameData.name
@@ -192,7 +191,7 @@ const createWindow = () => {
   // time that a new import is found, it should launch a process to load that
   // import into the sketch.
   const checkForImports = async () => {  // Get filtered json
-    const listImportsUrl = 
+    const listImportsUrl =
       `${cmdOpts.importsUrl}/index.php?c=${cmdOpts.cabinetName}`
 
     let res = await fetch(listImportsUrl)
@@ -214,7 +213,7 @@ const createWindow = () => {
 
       importCodes = importCodes.map(ic => {
         return {
-          code: ic.code, 
+          code: ic.code,
           isImported: ic.code === usedImportCode ? true : ic.isImported
         }
       })
@@ -224,24 +223,24 @@ const createWindow = () => {
 
     setTimeout(checkForImports, 60000)
   }
-  if (cmdOpts.allowP5jsImports){
+  if (cmdOpts.allowP5jsImports) {
     checkForImports()
   }
 
   // Watch for ESC key events so that we can cancel the currently running
   // sketch and return to the showcase.
   win.webContents.on("before-input-event", (event, input) => {
-    if (input.type == "keyDown" && input.key === "Escape"){
+    if (input.type == "keyDown" && input.key === "Escape") {
       win.webContents.send("back")
     }
-  })    
+  })
 
   // If the configuration has been set to allow imports from p5js, launch a
   // timeout to check for new urls to import.
   // if (cmdOpts.allowP5jsImports){
   //   setTimeout(checkForImports, 1000)
   // }
-  
+
   // TODO: Looking at the idle time might allow for an autonomous animation to
   //       load and run if the cabinets have been quiet for a while.
   //       See below for the commented out function 'reportIdleTime'
@@ -277,25 +276,25 @@ const createWindow = () => {
         {
           role: "reload"
         },
-        { 
-          role: "toggleDevTools" 
+        {
+          role: "toggleDevTools"
         },
         {
           role: "quit",
-          label: "Quit",          
+          label: "Quit",
         },
       ]
     }
   ])
-  
+
   Menu.setApplicationMenu(menu)
 
   // Load the showcase src file as our application page.
   win.loadFile("src/html/showcase.html")
 
   // Show the chromium dev tools if that has been requested. 
-  if (cmdOpts.devTools){
-    win.webContents.openDevTools()  
+  if (cmdOpts.devTools) {
+    win.webContents.openDevTools()
   }
 
   // Prevent the app from opening the URL in-app, instead open in browser.
@@ -307,13 +306,13 @@ const createWindow = () => {
     shell.openExternal(details.url)
     return { action: "deny" }
   })
-  
+
 }
 
 // Function to filter json list returned by request to importUrl/index.php
 // so that it only includes entries that we have generated the import code for
 // and that come from a permitted user id on our list of ids.
-function filterImportJson(json){
+function filterImportJson(json) {
   // First filter by valid import codes.
   let validJson = json.filter(
     je => importCodes.filter(ie => !ie.isImported).map(ie => ie.code)
@@ -336,14 +335,14 @@ async function importSketch(importJson) {
   let fullPathRoot = `${cmdOpts.sketchesPath}/${pathRoot}`
 
   // Check if a previous import already exists
-  if (fs.existsSync(fullPathRoot)){
+  if (fs.existsSync(fullPathRoot)) {
     console.log("Removing previous import directory:", pathRoot)
-    fs.rmSync(fullPathRoot, {recursive: true, force: true})
+    fs.rmSync(fullPathRoot, { recursive: true, force: true })
   }
 
   const sketchJsonUrl =
     `https://editor.p5js.org/editor/${sketchUser}/projects/${sketchId}`
-  
+
   let res = await fetch(sketchJsonUrl)
   let json = await res.json()
 
@@ -351,26 +350,26 @@ async function importSketch(importJson) {
   let paths = {
     all: [],
     atPath: {},
-    byId: {} 
+    byId: {}
   }
 
   // First, iterate and add all the ids and entries.
-  for (let p of json.files){
+  for (let p of json.files) {
     paths.all.push(p._id)
     paths.byId[p._id] = p
   }
 
   // Next go through and add information about who is the parent.
-  for (let p of json.files){
-    for (let cId of p.children){
+  for (let p of json.files) {
+    for (let cId of p.children) {
       paths.byId[cId].parent = p._id
     }
   }
 
   // Function to recursively rebuild the paths
-  function getBasePathRecursive(id, lvls){
-    const {name, parent} = paths.byId[id]
-    if (parent){
+  function getBasePathRecursive(id, lvls) {
+    const { name, parent } = paths.byId[id]
+    if (parent) {
       return `${getBasePathRecursive(parent, lvls + 1)}/${lvls > 0 ? name : ""}`
     } else {
       return `${pathRoot}/${lvls > 0 ? name : ""}`
@@ -378,22 +377,22 @@ async function importSketch(importJson) {
   }
 
   // Now reconstruct the path and create files / folders
-  for (let id of paths.all){
+  for (let id of paths.all) {
     let p = paths.byId[id]
     p.basePath = getBasePathRecursive(id, 0)
     p.path = `${p.basePath}/${p.name}`
 
     // Also record all the items at a given path. Makes it easier to 
     // guess which should be the entry point for example.
-    if (Object.hasOwn(paths.atPath, p.basePath)){
-      paths.atPath[p.basePath].push({name: p.name, id: p.id})
+    if (Object.hasOwn(paths.atPath, p.basePath)) {
+      paths.atPath[p.basePath].push({ name: p.name, id: p.id })
     } else {
-      paths.atPath[p.basePath] = [{name: p.name, id: p.id}]
+      paths.atPath[p.basePath] = [{ name: p.name, id: p.id }]
     }
 
-    if (p.fileType === "folder"){
+    if (p.fileType === "folder") {
       createImportFolder(p.path)
-    } else if (p.url){
+    } else if (p.url) {
       await downloadFile(p.path, p.url)
     } else {
       createFileWithContent(p.path, p.content)
@@ -409,9 +408,9 @@ async function importSketch(importJson) {
   let documentationFile = rootFilesPath
   let wordFiles = rootFiles.filter(e => e.name.match(/\.docx?$/i))
   let pdfFiles = rootFiles.filter(e => e.name.match(/\.pdf$/i))
-  if (pdfFiles.length > 0){
+  if (pdfFiles.length > 0) {
     documentationFile = `${rootFilesPath}${pdfFiles[0].name}`
-  } else if (wordFiles.length > 0){
+  } else if (wordFiles.length > 0) {
     documentationFile = `${rootFilesPath}${wordFiles[0].name}`
   } else {
     documentationFile = rootFilesPath
@@ -419,9 +418,9 @@ async function importSketch(importJson) {
   }
 
   let instructionsFile = `${rootFilesPath}instructions.txt`
-  if (rootFiles.indexOf(e => e.name === "instructions.txt") == -1){
+  if (rootFiles.indexOf(e => e.name === "instructions.txt") == -1) {
     let txtFiles = rootFiles.filter(e => e.name.match(/\.txt$/i))
-    if (txtFiles.length > 0){
+    if (txtFiles.length > 0) {
       instructionsFile = `${rootFilesPath}${txtFiles[0].name}`
     } else {
       instructionsFile = rootFilesPath
@@ -430,9 +429,9 @@ async function importSketch(importJson) {
   }
 
   let sketchFile = `${rootFilesPath}index.html`
-  if (rootFiles.indexOf(e => e.name === "index.html") == -1){
+  if (rootFiles.indexOf(e => e.name === "index.html") == -1) {
     let otherHtmlFiles = rootFiles.filter(e => e.name.match(/\.html$/i))
-    if (otherHtmlFiles.length > 0){
+    if (otherHtmlFiles.length > 0) {
       sketchFile = `${rootFilesPath}${otherHtmlFiles[0].name}`
     } else {
       sketchFile = rootFilesPath
@@ -441,26 +440,26 @@ async function importSketch(importJson) {
   }
 
   let thumbFile = `${rootFilesPath}thumb.png`
-  if (rootFiles.indexOf(e => e.name === "thumb.png") == -1){
+  if (rootFiles.indexOf(e => e.name === "thumb.png") == -1) {
     let pngFiles = rootFiles.filter(e => e.name.match(/\.png?$/i))
     let jpgFiles = rootFiles.filter(e => e.name.match(/\.jpe?g$/i))
-    if (pngFiles.length > 0){
+    if (pngFiles.length > 0) {
       thumbFile = `${rootFilesPath}${pngFiles[0].name}`
-    } else if (jpgFiles.length > 0){
+    } else if (jpgFiles.length > 0) {
       thumbFile = `${rootFilesPath}${jpgFiles[0].name}`
     } else {
       thumbFile = rootFilesPath
       missingFiles.push("thumb")
-    }  
+    }
   }
 
   let id = `${userName}-${sketchId}`.replace(/\s+/gi, "_")
   let newJson = {
-    _cabinet: cmdOpts.cabinetName,
-    _found_all_files: missingFiles.length == 0,
-    _has_confirmed: true,
-    _is_buggy: false,
-    _missing_files: missingFiles,
+    cabinet: cmdOpts.cabinetName,
+    found_all_files: missingFiles.length == 0,
+    has_confirmed: true,
+    is_buggy: false,
+    missing_files: missingFiles,
     documentation: documentationFile,
     first_name: userName.split(" ")[0],
     last_name: userName.split(" ").pop(),
@@ -478,23 +477,23 @@ const addEntryToImportLinksJson = (importId, newJson) => {
   const importLinksJsonPath = `${cmdOpts.sketchesPath}/_imports/_links.json`
   let oldImportLinksJson = {}
 
-  if (fs.existsSync(importLinksJsonPath)){
+  if (fs.existsSync(importLinksJsonPath)) {
     let oldImportLinksStr = fs.readFileSync(
-      importLinksJsonPath, {encoding: "utf-8"})
+      importLinksJsonPath, { encoding: "utf-8" })
     oldImportLinksJson = JSON.parse(oldImportLinksStr)
   }
 
   oldImportLinksJson[importId] = newJson
-  
+
   // For now, I'll just save this to file
   console.log("Writing updated import _links.json to file.")
-  fs.writeFileSync(importLinksJsonPath, 
-    JSON.stringify(oldImportLinksJson, undefined, 4), {encoding: "utf-8"})
+  fs.writeFileSync(importLinksJsonPath,
+    JSON.stringify(oldImportLinksJson, undefined, 4), { encoding: "utf-8" })
 }
 
 const createImportFolder = (path) => {
   console.log("creating import folder.")
-  fs.mkdirSync(`${cmdOpts.sketchesPath}/${path}`, {recursive: true})
+  fs.mkdirSync(`${cmdOpts.sketchesPath}/${path}`, { recursive: true })
 }
 
 const createFileWithContent = (path, content) => {
@@ -508,7 +507,7 @@ const downloadFile = async (path, url) => {
   const res = await fetch(url)
   const fileStream = fs.createWriteStream(
     `${cmdOpts.sketchesPath}/${path}`, { flags: "wx" })
-  await finished(Readable.fromWeb(res.body).pipe(fileStream))  
+  await finished(Readable.fromWeb(res.body).pipe(fileStream))
 }
 
 app.whenReady().then(() => {

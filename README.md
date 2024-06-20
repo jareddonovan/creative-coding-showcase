@@ -149,11 +149,11 @@ For each key, there should be an object with the following fields:
 
 * `"first_name"` (String): First name of the author
 * `"last_name"` (String): Last name of the author
-* `"_has_confirmed"` (Boolean): Whether the author of the sketch has confirmed
+* `"has_confirmed"` (Boolean): Whether the author of the sketch has confirmed
   that they want to be in the exhibition. Useful if you need to do a lot of
   pre-processing and may not get final confirmations until quite late.
   If `false`, the sketch will not be displayed.
-* `"_cabinet"` (String): Which cabinet the sketch should be shown on, e.g.
+* `"cabinet"` (String): Which cabinet the sketch should be shown on, e.g.
   `"huey"`. This can also be a comma-separated list to allow a sketch to be
   shown on more than one cabinet, e.g. `"huey, dewey, louie"`. You can choose
   arbitrary names for the cabinets depending on your needs.
@@ -163,12 +163,12 @@ For each key, there should be an object with the following fields:
     hosts the sketch (often `index.html`, but not always).
 * `"thumb"` (String): Path to an image in the sketch folder for a thumbnail
   image that will be displayed for the sketch in the gallery. 
-* `"_found_all_files"` (Boolean): Whether pre-processing found all expected
+* `"found_all_files"` (Boolean): Whether pre-processing found all expected
   files or not.
-* `"_missing_files"` (Array): A list of any files that could not be found
+* `"missing_files"` (Array): A list of any files that could not be found
   during pre-processing. Useful for diagnosing problems, or knowing
   what needs fixing for a sketch to display properly (e.g. a thumbnail).
-* `"_is_buggy"` (Boolean): If true, the sketch will not display in the
+* `"is_buggy"` (Boolean): If true, the sketch will not display in the
   exhibition. Allows you to take a sketch out of the exhibition temporarily
   without having to remove the folder.
 
@@ -179,15 +179,15 @@ For example...
   "sketch_one": {
     "first_name": "Jana",
     "last_name":  "Scrip",
-    "_has_confirmed": false,
-    "_cabinet": "dewey",
+    "has_confirmed": false,
+    "cabinet": "dewey",
     "documentation": "sketch-one/creative-sketch-process.pdf",
     "instructions": "sketch-one/README.txt",
     "sketch": "sketch-one/sketch.html",
     "thumb": "sketch-one/images/thumb.png",
-    "_found_all_files": true,
-    "_missing_files": [],
-    "_is_buggy": false
+    "found_all_files": true,
+    "missing_files": [],
+    "is_buggy": false
   }
 }
 ```
