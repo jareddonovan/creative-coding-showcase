@@ -546,13 +546,17 @@ function showSketch(name, json) {
   let shouldShowCursor = opts.hideCursor ? false : true
     || json[name].show_cursor === true
 
+  let shouldFixSketchCss = json[name].fix_css !== false
+
   console.log("sketchPath", sketchPath)
 
-  loadSketch(name, displayName, sketchPath, shouldShowCursor)
+  loadSketch(name, displayName, sketchPath, shouldShowCursor,
+    shouldFixSketchCss)
 }
 
 // Helper to load a sketch into the frame (import, or showcase)
-function loadSketch(name, displayName, sketchPath, shouldShowCursor) {
+function loadSketch(name, displayName, sketchPath, shouldShowCursor,
+  shouldFixSketchCss = true) {
   window.electronAPI.setName({
     name,
     displayName
@@ -578,7 +582,10 @@ function loadSketch(name, displayName, sketchPath, shouldShowCursor) {
     // has loaded, we need to add a css link to the header.
     // Also, for my fixes, I show a glowing border once the sketch has
     // actually started running, so there is a timeout to check for that.
-    if (opts.fixCss) {
+    // Both the global option and the sketch specific options should be true
+    let doFixCss = opts.fixCss && shouldFixSketchCss
+
+    if (doFixCss) {
       ifm.removeClass("full")
 
       let fixCssLink = location.pathname.replace(
