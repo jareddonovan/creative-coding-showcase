@@ -59,8 +59,14 @@ async function setup() {
   opts = { ...newOpts }
 
   // If options specify that the cursor should not be hidden
-  if (!opts.hideCursor) {
+  if (opts.hideCursor) {
+    console.log("we should hide the cursor")
+    divMain.addClass("hideCursor")
+    document.body.classList.add("hideCursor")
+  } else {
+    console.log("we should show the cursor")
     divMain.removeClass("hideCursor")
+    document.body.classList.remove("hideCursor")
   }
 
   // If options specify that the select dropdown should be shown
@@ -536,7 +542,9 @@ function showSketch(name, json) {
   let displayName = name
   let sketchUrl = json[name].sketch
   let sketchPath = `${opts.sketchesPath}/${sketchUrl}`
-  let shouldShowCursor = json[name]._show_cursor === true
+  //let shouldShowCursor = json[name].show_cursor === true
+  let shouldShowCursor = opts.hideCursor ? false : true
+    || json[name].show_cursor === true
 
   console.log("sketchPath", sketchPath)
 
@@ -557,8 +565,12 @@ function loadSketch(name, displayName, sketchPath, shouldShowCursor) {
   ifm.elt.onload = () => {
     ifm.elt.contentWindow.focus()
 
-    if (!shouldShowCursor) {
-      console.log("should not show cursor")
+    if (shouldShowCursor) {
+      console.log("should show cursor in sketch")
+      ifm.elt.contentDocument.body.classList.remove("hideCursor")
+    }
+    else {
+      console.log("should not show cursor in sketch")
       ifm.elt.contentDocument.body.classList.add("hideCursor")
     }
 
