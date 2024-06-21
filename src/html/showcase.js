@@ -263,7 +263,7 @@ function isDebouncing() {
 function createSketchCover(name, json, position) {
   // let {firstName, lastName} = getNameParts(name)
   // let title = `${firstName} ${lastName}`
-  let title = name
+  let title = `${json[name].first_name} ${json[name].last_name}`
 
   // Set a default thumb
   let thumb = "./assets/default_thumb.png"
