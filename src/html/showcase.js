@@ -589,7 +589,7 @@ function loadSketch(name, displayName, sketchPath, shouldShowCursor,
       ifm.removeClass("full")
 
       let fixCssLink = location.pathname.replace(
-        /showcase.html$/, "showcase.css")
+        /showcase.html$/, "fix_sketch_layout.css")
 
       let cssLink = createElement("link")
       cssLink.attribute("href", fixCssLink)
