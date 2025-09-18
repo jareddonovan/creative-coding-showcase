@@ -95,6 +95,8 @@ The format of the file with a single object containing the following keys:
   some additional setup (see below).
 * `"importsUrl"` (string): URL for a web page that will accept user
   submissions of p5js editor sketches to import (see below).
+* `"importPollRate"` (number): How often (in milliseconds) to
+  poll the imports URL for new sketches to import.
 * `"permittedImportIdsPath"` (string): Path to a JSON which holds a
   pre-defined list of IDs that you will allow imports from.
 * `"hideCursor"` (boolean): Whether or not to hide the cursor. For the
@@ -120,6 +122,7 @@ Here are the default values for the config file:
   "sketchesPath": "[USER DOCUMENTS]/creative-coding-showcase/sketches"
   "allowP5Imports": false,
   "importsURL": "http://0.0.0.0/imports",
+  "importPollRate": 60000,
   "permittedImportsIdPath": `[USER DOCUMENTS]/creative-coding-showcase/sketches/_permittedImportIds.json,
   "hideCursor": true,
   "showSketchDropdown": false,

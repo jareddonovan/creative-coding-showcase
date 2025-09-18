@@ -14,6 +14,17 @@ html, body, main.gallery, main {
   font-family: sans-serif;
 }
 
+#importInfo {
+  display: none;
+  position: fixed;
+  left: 0;
+  top: 0;
+  width: 100px;
+  color: black;
+  height: auto;
+  padding: 10px;
+}
+
 main.gallery, main {
   position: fixed;
   inset: 0;

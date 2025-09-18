@@ -21,8 +21,8 @@ let isShowingGallery = true
 let selectedCoverId = null
 let nextCoverIdNum = 0
 let lastKp = -opts.debounceTime
-
-
+let preImportInfo
+let importInfo = "IMPORT INFO"
 
 /////////////////////////////////////////////////
 //
@@ -43,11 +43,14 @@ async function setup() {
   divGallery = select("#gallery")
   divMain = select("main")
 
+  preImportInfo = select("#importInfo")
+
   window.electronAPI.onNextSketch(handleNextClicked)
   window.electronAPI.onPrevSketch(handlePrevClicked)
   window.electronAPI.onSelect(handleSelectClicked)
   window.electronAPI.onBack(handleBackClicked)
   window.electronAPI.onImportSketch(handleImportSketch)
+  window.electronAPI.onImportInfo(handleImportInfo)
 
   window.electronAPI.setName({
     name: "creative-coding-showcase",
@@ -87,6 +90,7 @@ async function setup() {
 
   // Also fetch additional json for imported sketches if options indicate
   if (opts.allowP5jsImports) {
+    preImportInfo.show()
     try {
       console.log(
         `Fetching import json from: ${opts.sketchesPath}/_imports/_links.json`)
@@ -498,6 +502,14 @@ function handleImportSketch(json) {
       setSelectedCoverId(newCoverId)
     }
   }
+}
+
+/////////////////////////////////////////////////
+//
+// Handle when there is an update on import process
+//
+function handleImportInfo(json) {
+  preImportInfo.elt.innerHTML = json.msg
 }
 
 /////////////////////////////////////////////////

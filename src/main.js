@@ -17,8 +17,8 @@ const defaultTitle = "Creative Coding Showcase"
 let currentName = ""
 
 // Store a list of all the IDs that have been generated while the app has
-// been running. 
-// TODO: The initialization data below is just for testing.
+// been running. This will be overwritten by data from a file read in once 
+// config is loaded.
 let importCodes = []
 
 // A list of all the ids we have permitted to import sketches. 
@@ -52,6 +52,7 @@ if (!fs.existsSync(configPath)) {
     sketchesPath: defaultSketchesPath,
     allowP5jsImports: false,
     importsUrl: "http://0.0.0.0/imports",
+    importPollRate: 60000,
     permittedImportIdsPath: `${defaultSketchesPath}/_permittedImportIds.json`,
     hideCursor: true,
     showSketchDropdown: false
@@ -77,20 +78,53 @@ if (cmdOpts.version != app.getVersion()) {
 }
 cmdOpts.version = app.getVersion()
 
-// Add a blank _links.json file for the showcase sketches and for any import
-// (if indicated in settings)
+// Add a blank _links.json file for the showcase sketches 
 if (!fs.existsSync(`${cmdOpts.sketchesPath}/_links.json`)) {
   fs.writeFileSync(`${cmdOpts.sketchesPath}/_links.json`,
     JSON.stringify({}, undefined, 4), { encoding: "utf-8", recursive: true })
 }
 
-if (cmdOpts.allowP5jsImports &&
-  !fs.existsSync(`${cmdOpts.sketchesPath}/_imports/_links.json`)) {
-  fs.mkdirSync(`${cmdOpts.sketchesPath}/_imports/`, { recursive: true })
-  fs.writeFileSync(`${cmdOpts.sketchesPath}/_imports/_links.json`,
-    JSON.stringify({}, undefined, 4), { encoding: "utf-8", recursive: true })
+// Read / create _links.json and _importCodes.json files if imports are to be
+// allowed. 
+if (cmdOpts.allowP5jsImports) {
+  if (!fs.existsSync(`${cmdOpts.sketchesPath}/_imports`)) {
+    fs.mkdirSync(`${cmdOpts.sketchesPath}/_imports/`, { recursive: true })
+  }
+
+  if (!fs.existsSync(`${cmdOpts.sketchesPath}/_imports/_links.json`)) {
+    fs.writeFileSync(`${cmdOpts.sketchesPath}/_imports/_links.json`,
+      JSON.stringify({}, undefined, 4), { encoding: "utf-8", recursive: true }
+    )
+  }
+
+  importCodes = loadImportCodes() || importCodes
+  saveImportCodes()
 }
 
+// Load import codes from file
+function loadImportCodes() {
+  let importCodesFromFile = null
+
+  if (fs.existsSync(`${cmdOpts.sketchesPath}/_imports/_importCodes.json`)) {
+    importCodesFromFile = JSON.parse(fs.readFileSync(
+      `${cmdOpts.sketchesPath}/_imports/_importCodes.json`,
+      { encoding: "utf8" })
+    )
+  }
+
+  return importCodesFromFile
+}
+
+// Save the import codes to file
+function saveImportCodes() {
+  if (!fs.existsSync(`${cmdOpts.sketchesPath}/_imports`)) {
+    fs.mkdirSync(`${cmdOpts.sketchesPath}/_imports/`, { recursive: true })
+  }
+  fs.writeFileSync(`${cmdOpts.sketchesPath}/_imports/_importCodes.json`,
+    JSON.stringify(importCodes, undefined, 4),
+    { encoding: "utf-8", recursive: true }
+  )
+}
 
 // Handler to provide the options that the app is running with. This allows
 // the showcase.js app to access the config/command-line options.
@@ -101,10 +135,18 @@ function handleGetOpts() {
 // This function will generate a new id for use to request a p5js sketch be
 // imported. Used by the 'import' sketch.js page.
 function handleGenerateImportCode() {
+  console.log("handleGenerateImportCode()")
   let rawCode = Date.now() + ""
   let newImportCode = (CRC32.str(rawCode, 0) >>> 0).toString(32)
 
-  importCodes.push({ code: newImportCode, isImported: false })
+  importCodes.push({
+    code: newImportCode,
+    isImported: false,
+    createdAt: new Date().toString()
+  })
+
+  saveImportCodes()
+
   return newImportCode
 }
 
@@ -191,19 +233,33 @@ const createWindow = () => {
   // time that a new import is found, it should launch a process to load that
   // import into the sketch.
   const checkForImports = async () => {  // Get filtered json
+    console.log("checkForImports()")
+
+    win.webContents.send("import-info", {
+      msg: "checking for imports"
+    })
+
     const listImportsUrl =
       `${cmdOpts.importsUrl}/index.php?c=${cmdOpts.cabinetName}`
 
     let res = await fetch(listImportsUrl)
     let json = await res.json()
 
+    console.log(`..got import json with ${json.length} items`)
+
     // Only pay attention to import requests we have a recorded code for
     // (i.e., ones we generated on this app during this run.)
     let validJson = filterImportJson(json)
 
+    console.log(`..got validJson with ${validJson.length} items`)
+
     let importJson = {}
 
     for (let validEntry of validJson) {
+      win.webContents.send("import-info", {
+        msg: `importing ${validEntry}`
+      })
+
       let [newId, newJson] = await importSketch(validEntry)
       importJson[newId] = newJson
       addEntryToImportLinksJson(newId, newJson)
@@ -214,14 +270,21 @@ const createWindow = () => {
       importCodes = importCodes.map(ic => {
         return {
           code: ic.code,
-          isImported: ic.code === usedImportCode ? true : ic.isImported
+          isImported: ic.code === usedImportCode ? true : ic.isImported,
+          createdAt: ic.createdAt
         }
       })
     }
 
+    saveImportCodes()
+
     win.webContents.send("import-sketch", importJson)
 
-    setTimeout(checkForImports, 60000)
+    win.webContents.send("import-info", {
+      msg: `next import in ${Math.floor(cmdOpts.importPollRate / 1000)}s`
+    })
+
+    setTimeout(checkForImports, cmdOpts.importPollRate)
   }
   if (cmdOpts.allowP5jsImports) {
     checkForImports()
@@ -313,30 +376,47 @@ const createWindow = () => {
 // so that it only includes entries that we have generated the import code for
 // and that come from a permitted user id on our list of ids.
 function filterImportJson(json) {
+  console.log(`filterImportJson() json: ${json.length} items`)
+
   // First filter by valid import codes.
   let validJson = json.filter(
     je => importCodes.filter(ie => !ie.isImported).map(ie => ie.code)
       .includes(je.import_code)
   )
 
+  let numValidCodes = validJson.length
+  if (numValidCodes < json.length) {
+    console.log(`..there were ${json.length - numValidCodes} invalid codes`)
+  }
+
   // Also only pay attention to import requests we have explicitly permitted a
   // user to make
   validJson = validJson.filter(
     ve => permittedImportIds.all.includes(ve.id_hash)
   )
+
+  let numPermitted = validJson.length
+  if (numPermitted < numValidCodes) {
+    console.log(`..there were ${numValidCodes - numPermitted} not permitted`)
+  }
+
   return validJson
 }
 
 async function importSketch(importJson) {
+  console.log("importSketch(), importJson:", importJson)
+
   let sketchId = importJson.sketch_url.split("/").pop()
   let sketchUser = importJson.sketch_url.split("/")[3]
   let userName = permittedImportIds.byId[importJson.id_hash].name
   let pathRoot = `_imports/${userName.replace(/\s+/g, "_")}/${sketchId}`
   let fullPathRoot = `${cmdOpts.sketchesPath}/${pathRoot}`
 
+  console.log("..sketchId:", sketchId)
+
   // Check if a previous import already exists
   if (fs.existsSync(fullPathRoot)) {
-    console.log("Removing previous import directory:", pathRoot)
+    console.log("..Removing previous import directory:", pathRoot)
     fs.rmSync(fullPathRoot, { recursive: true, force: true })
   }
 

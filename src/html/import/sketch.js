@@ -1,7 +1,6 @@
 
 let cabinetName
 let importsUrl
-let newImportLink
 let cnv
 let qrCode
 let importCode
@@ -12,6 +11,8 @@ let imgStep1Button
 let imgStep1Space
 let imgStep2
 let imgStep3
+
+const instructionOffsetY = 460
 
 let instructions = {
   step1: {
@@ -63,7 +64,7 @@ let m = 20
 let fntArtyImg
 let fntVT
 
-function preload(){
+function preload() {
   fntArtyImg = loadFont("fonts/BungeeShade-Regular.ttf")
   fntVT = loadFont("fonts/VT323-Regular.ttf")
 
@@ -73,7 +74,7 @@ function preload(){
   imgStep3 = loadImage("images/step-3.png")
 }
 
-function setup(){
+function setup() {
   cnv = createCanvas(1280, 720)
   colorMode(HSB)
   textAlign(CENTER, CENTER)
@@ -81,7 +82,7 @@ function setup(){
   cabinetName = window?.parent?.opts?.cabinetName || "test"
   importsUrl = window?.parent?.opts?.importsUrl || "http://0.0.0.0/imports"
 
-  if (cabinetName == "test" || cabinetName == "dewey"){
+  if (cabinetName == "test" || cabinetName == "dewey") {
     imgStep1 = imgStep1Space
   } else {
     imgStep1 = imgStep1Button
@@ -93,8 +94,8 @@ function setup(){
   qrCode.parent(select("main"))
   qrCode.style("position", "absolute")
   qrCode.style("left", "-10000px")
-  qrCode.style("top", "-10000px") 
-  
+  qrCode.style("top", "-10000px")
+
   // qrCode.hide()
 
   // newImportLink = createA("#", "")
@@ -104,9 +105,9 @@ function setup(){
   // newImportLink.hide()
 }
 
-function draw(){
+function draw() {
   background(169, 245, 255)
-  
+
   // if (currentStep == 1){
   //   qrCode.removeClass("fade-in")
   //   qrCode.hide()
@@ -131,28 +132,30 @@ function draw(){
   text("IMPORT YOUR SKETCH", 0, 0)
   pop()
 
-  push()
-  textFont(fntVT)
-  textSize(48)
-  textAlign(CENTER, TOP)
-  text("Follow these steps to add your sketch to the cabinet", 
-    0, 110, width, 100)
-  pop()
+  // push()
+  // textFont(fntVT)
+  // textSize(48)
+  // textAlign(CENTER, TOP)
+  // text("Follow these steps to add your sketch to the cabinet",
+  //   0, 110, width, 100)
+  // pop()
 
   push()
   noStroke()
   let rectHu = (frameCount / 5) % 360
   let rectX = m
-  let rectY = 155 + m
+  let rectY = 95 + m
   let rectW = (width - m * 4) / 3
-  let rectH = height - (180 + 3 * m)
+  let rectH = height - (110 + 3 * m)
+
+  // console.log('rectW', rectW)
 
   // STEP 1 rect
   fill(rectHu, 30, 90)
   rect(rectX, rectY, rectW, rectH)
   image(imgStep1, rectX, rectY)
 
-  if (currentStep == 1){
+  if (currentStep == 1) {
     drawCurrentBorder(rectX, rectY, rectW, rectH)
   }
 
@@ -165,16 +168,17 @@ function draw(){
   text("STEP 1.", rectX, rectY, rectW, 60)
 
   // STEP 1 instructions
-  if (currentStep == 1){
+  if (currentStep == 1) {
     textFont(fntVT)
     textAlign(LEFT, TOP)
     fill((rectHu + 180) % 360, 20, 20)
     textSize(24)
-    text(instructions.step1[cabinetName], 
-      rectX + m, rectY + 380, rectW - m, 0.3 * rectH
+    text(instructions.step1[cabinetName],
+      rectX + m, rectY + instructionOffsetY,
+      rectW - m, 0.3 * rectH
     )
-  }    
-    
+  }
+
   pop()
 
   // STEP 2 rect
@@ -182,13 +186,13 @@ function draw(){
   rectHu = (rectHu + 120) % 360
   fill(rectHu, 30, 90)
   rect(rectX, rectY, rectW, rectH)
-  
-  if (currentStep == 2){
+
+  if (currentStep == 2) {
     drawCurrentBorder(rectX, rectY, rectW, rectH)
   }
 
-  if (currentStep == 2 && hasGeneratedCode){
-    drawCode(rectX, rectY, rectW, rectH)
+  if (currentStep == 2 && hasGeneratedCode) {
+    drawCode(rectX + m, rectY + 80, rectW - m * 2, rectH)
   } else {
     image(imgStep2, rectX, rectY)
   }
@@ -202,17 +206,18 @@ function draw(){
   text("STEP 2.", rectX, rectY, rectW, 60)
 
   // STEP 2 instructions
-  if (currentStep == 2){
+  if (currentStep == 2) {
     textFont(fntVT)
     textAlign(LEFT, TOP)
     fill((rectHu + 180) % 360, 20, 20)
     textSize(24)
-    let step2Instructions = !hasGeneratedCode 
+    let step2Instructions = !hasGeneratedCode
       ? instructions.step2a[cabinetName]
       : instructions.step2b[cabinetName]
 
-    text(step2Instructions, 
-      rectX + m, rectY + 380, rectW - m, 0.3 * rectH
+    text(step2Instructions,
+      rectX + m, rectY + instructionOffsetY,
+      rectW - m, 0.3 * rectH
     )
   }
   pop()
@@ -225,7 +230,7 @@ function draw(){
   image(imgStep3, rectX, rectY)
 
 
-  if (currentStep == 3){
+  if (currentStep == 3) {
     drawCurrentBorder(rectX, rectY, rectW, rectH)
   }
 
@@ -236,15 +241,16 @@ function draw(){
   textSize(48)
   textAlign(CENTER, CENTER)
   text("STEP 3.", rectX, rectY, rectW, 60)
-  
+
   // STEP 3 instructions
-  if (currentStep == 3){
+  if (currentStep == 3) {
     textFont(fntVT)
     textAlign(LEFT, TOP)
     fill((rectHu + 180) % 360, 20, 20)
     textSize(24)
-    text(instructions.step3, 
-      rectX + m, rectY + 380, rectW - m, 0.3 * rectH
+    text(instructions.step3,
+      rectX + m, rectY + instructionOffsetY,
+      rectW - m, 0.3 * rectH
     )
   }
   pop()
@@ -257,16 +263,25 @@ function draw(){
   textFont(fntVT)
   textSize(36)
   textAlign(CENTER, TOP)
-  text("Only post nice stuff. Contact j.donovan@qut.edu.au if you have problems", 
+  text("Only post nice stuff. Contact j.donovan@qut.edu.au if you have problems",
     0, bottomTxtY, width, height - bottomTxtY)
   pop()
+
+  // push()
+  // stroke(0, 50, 80)
+  // strokeWeight(4)
+  // line(width / 2, 0, width / 2, height)
+  // line(width / 2 - 180, 0, width / 2 - 180, height)
+  // line(width / 2 + 180, 0, width / 2 + 180, height)
+  // pop()
 }
 
-function drawCode(x, y, w, h){
+function drawCode(x, y, w, h) {
   // qrCode.show()
   // newImportLink.show()
-  
-  positionOnCanvas(qrCode, x + 20, y + 15, 360, 360)
+
+  positionOnCanvas(qrCode, x, y, min(w, h), min(w, h))
+  // console.log("min", min(w, h))
   // positionOnCanvas(newImportLink, x, y)
 
   // text(`Import: ${importCode}`,
@@ -276,7 +291,7 @@ function drawCode(x, y, w, h){
 
 }
 
-function drawCurrentBorder(x, y, w, h){
+function drawCurrentBorder(x, y, w, h) {
   // console.log("x", x, "y", y, "w", w, "h", h)
 
   push()
@@ -287,21 +302,21 @@ function drawCurrentBorder(x, y, w, h){
   strokeWeight(5)
   drawingContext.shadowBlur = 32
   drawingContext.shadowColor = color(borderH, 60, 100, borderA)
-  rect(x - m / 3, y - m / 3, w + 2 * m / 3, h + 2 * m / 3, 
-    m/6, m/6, m/6, m/6)
-  pop()  
+  rect(x - m / 3, y - m / 3, w + 2 * m / 3, h + 2 * m / 3,
+    m / 6, m / 6, m / 6, m / 6)
+  pop()
 }
 
 // function mousePressed(){
 // }
 
 // Update the URL and QRCode for requesting a new import of a p5js sketch.
-async function updateUrl(){
+async function updateUrl() {
   console.log("updateUrl()")
   importCode = await parent?.window?.electronAPI?.generateImportCode() || "xxx"
 
   let params = `?i=${importCode}&c=${cabinetName}`
-  let newImportUrl = `${importsUrl}/new.php${params}`  
+  let newImportUrl = `${importsUrl}/new.php${params}`
   // let linkText = newImportUrl
   // linkText = linkText.split("//")[1]
 
@@ -311,15 +326,19 @@ async function updateUrl(){
 
   console.log("newImportUrl:", newImportUrl)
 
+  let importA = createA(newImportUrl, importCode)
+  importA.style("color", "#7fe1e1")
+  importA.position(10, 20)
+
   // Clear and regenerate the QR code
   qrCode.html("")
   new QRCode(qrCode.elt, {
     text: newImportUrl,
     width: 360,
     height: 360,
-    colorDark : "#000000",
-    colorLight : "#ffffff",
-    correctLevel : QRCode.CorrectLevel.L
+    colorDark: "#183030",
+    colorLight: "#ffffff",
+    correctLevel: QRCode.CorrectLevel.L
   })
 
   qrCode.show()
@@ -328,26 +347,26 @@ async function updateUrl(){
   hasGeneratedCode = true
 }
 
-async function keyPressed(){
+async function keyPressed() {
   console.log("key", key, "keyCode", keyCode)
 
   // updateUrl()
   let nextStep = currentStep
 
-  if (currentStep == 1){
-    if (key == keys.next[cabinetName]){
+  if (currentStep == 1) {
+    if (key == keys.next[cabinetName]) {
       nextStep = 2
     }
-  } else if (currentStep == 2){
-    if (hasGeneratedCode && key == keys.lastStep[cabinetName]){
+  } else if (currentStep == 2) {
+    if (hasGeneratedCode && key == keys.lastStep[cabinetName]) {
       nextStep = 3
       qrCode.removeClass("fade-in")
       qrCode.addClass("fade-out")
-    } else if (!hasGeneratedCode && keyCode == keys.generateCode[cabinetName]){
+    } else if (!hasGeneratedCode && keyCode == keys.generateCode[cabinetName]) {
       await updateUrl()
     }
-  } else if (currentStep == 3){
-    if (key == keys.next[cabinetName]){
+  } else if (currentStep == 3) {
+    if (key == keys.next[cabinetName]) {
       window?.parent?.handleBackClicked()
     }
   }
@@ -356,20 +375,22 @@ async function keyPressed(){
 }
 
 // Function to position an html element relative to the canvas.
-function positionOnCanvas(elem, x, y, w, h){
-  console.log("px", x, "py", y, "pw", w, "ph", h)
+function positionOnCanvas(elem, x, y, w, h) {
+  // console.log("px", x, "py", y, "pw", w, "ph", h)
 
   // Get left and top position of canvas
   let cX = cnv.elt.offsetLeft
   let cY = cnv.elt.offsetTop
 
   elem.style("position", "absolute")
-  elem.style("left", `${x + cX}px`)
-  elem.style("top", `${y + cY}px`) 
-  if (w){
+  // elem.style("left", `${x + cX}px`)
+  // elem.style("top", `${y + cY}px`)
+  elem.style("left", `${x}px`)
+  elem.style("top", `${y}px`)
+  if (w) {
     elem.style("width", `${w}px`)
   }
-  if (h){
+  if (h) {
     elem.style("height", `${h}px`)
   }
 }
