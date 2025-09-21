@@ -32,6 +32,10 @@ $ npm run make
 The compiled showcase application will be created in a subfolder of the `out`
 directory (exact name will vary depending on your operating system).
 
+### To install on Raspberry Pi
+
+See the [Raspberry-Pi-set-up](Raspberry-Pi-set-up.md) guide for full details.
+
 ## How it works
 
 It works by loading p5js sketches in an

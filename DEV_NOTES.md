@@ -24,6 +24,9 @@ TODO:
   URL for the list of imports.
 - [ ] Could the cabinets themselves host a little web server to allow the user
   to upload sketches directly to the cabinet over wifi?
+- [ ] `hideCursor` option should only show/hide cursor in main gallery. Should
+  not affect sketches.
+
 
 ## Older notes
 

@@ -60,8 +60,8 @@ if (!fs.existsSync(configPath)) {
   const defaultOpts = {
     version: pkgVersion,
     cabinetName: "test",
-    width: 1440,
-    height: 900,
+    width: 1240,
+    height: 800,
     fullscreen: false,
     debounceTime: 100,
     fixCss: true,
