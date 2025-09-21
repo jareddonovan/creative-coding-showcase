@@ -62,5 +62,11 @@
 - See `Raspberry-Pi-set-up.md` and `DEV_NOTES.md` for hardware and deployment notes.
 - See `scripts/` for automation and hardware setup.
 
+## Locale information
+
+Language for development: Australian English
+Timezone: AEST
+Date Format: YYYY-MM-DD
+
 ---
 **Feedback:** Please review and suggest additions or clarifications for any unclear or incomplete sections.

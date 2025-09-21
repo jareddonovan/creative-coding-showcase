@@ -1,6 +1,33 @@
 # DEV NOTES
 
-## Testing that camera works on pi
+This file contains working notes for development as I go. It is not intended
+for end users.
+
+## Date: 2025-09-20
+
+TODO:
+- [x] Make it so it works either with `npm start` or `npx electron src/main.js`
+- [ ] Add some rudimentary logging for when imports are allowed
+  - [x] Show a time for how old messages are (human readable)
+  - [ ] Scroll messages so we only see the most recent ones
+  - [ ] Show a list of codes that are still outstanding
+  - [ ] Add a badge to imported sketches to show which import version they are.
+- [ ] Do not poll for imports when a sketch is running
+- [ ] Encrypt the urls on the import site? (pgp?)
+- [ ] Add instructions.txt into the showcase thumbnail for the current one?
+- [ ] Allow the user to configure the import process to be less 'strict'.
+  E.g., allow importing sketches based on a pre-existing code rather than
+  requiring them to use the QR code generated from the 'import sketch' item.
+  This would mean it could be distributed to students ahead of testing and I
+  could have their sketches loaded and ready to go when they turn up.
+- [ ] Add some more robust checking for the import process when checking the
+  URL for the list of imports.
+- [ ] Could the cabinets themselves host a little web server to allow the user
+  to upload sketches directly to the cabinet over wifi?
+
+## Older notes
+
+### Testing that camera works on pi
 
 I have the raspberry pi camera module 3, wide.
 
@@ -11,7 +38,7 @@ does much the same thing.
 
 The camera module appears to be working fine based on this.
 
-## Getting raspberry pi camera module working as a webcam on chromium.
+### Getting raspberry pi camera module working as a webcam on chromium.
 
 Sketch for testing webcam in the browser:
 
@@ -28,7 +55,7 @@ of these keywords:
 * pipewire - a low level multimedia framework for linux.
 
 
-## GStreamer workaround
+### GStreamer workaround
 
 A work around was the use of `gstreamer` mentioned on the following page. The
 reply is about half way down from user **MattO**. They mention that a
@@ -95,9 +122,7 @@ With the following line:
 @reboot /home/USER/Documents/coding/creative-coding-showcase/scripts/launch_video_loopback.sh
 ```
 
-
-
-## Troubleshooting SD cards notes
+### Troubleshooting SD cards notes
 
 * H1: Huey - in the spare rpi 4. Haven't tested.
 * H2: Huey - in the cabinet rpi 5. Works.
@@ -113,7 +138,7 @@ With the following line:
 * L3: Louie - in the cabinet rpi5. Works.
 * L4: Louie - in the pi5 in the cabinet. 64Gb and fast card. Works very well.
 
-## Raspberry pi 5 power button fix notes
+### Raspberry pi 5 power button fix notes
 
 On the raspberry pi 5, there is a power button which should allow the user to
 press once to bring up a shutdown dialog, twice to initiate shutdown, or
@@ -131,7 +156,7 @@ relevant:
 
 * <https://github.com/adafruit/Raspberry-Pi-Installer-Scripts/issues/313>
 
-### Problems with gpio-halt not installing
+#### Problems with gpio-halt not installing
 
 The arcade bonnet script separately installs the gpio-halt utility, so I decided
 to first try and compile that and get it running. 
@@ -188,7 +213,7 @@ If neither of these work, I will take a look at the `retrogame` project and see
 if it has any issues related to working on raspberry pi 5. Or perhaps there is
 another library that will work on rapsberry pi 5.
 
-### Troubleshooting arcadeBonnet.py script
+#### Troubleshooting arcadeBonnet.py script
 
 As per the [Raspberry Pi Hardware] documentation, you can add your own power
 button. I have done this and tested it. It works just like the on-board button.
@@ -440,10 +465,7 @@ plugged in yet.
 
 I shutdown, plug the bonnet in, and restart.
 
-
-
-## Links
+### Links
 
 [`nmap()`]: https://man7.org/linux/man-pages/man2/mmap.2.html
 [Raspberry Pi Hardware]: https://www.raspberrypi.com/documentation/computers/raspberry-pi.html
-

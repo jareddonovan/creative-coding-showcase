@@ -241,19 +241,26 @@ npm start
 This will start the application with some example content you can use
 to test. It will also generate a default `config.json` file in your
 system configuration directory, which you can edit to change how the
-showcase app works. You can exit the app from the menu, or by typing 
+showcase app works. You can exit the app from the menu, or by typing
 CTRL+C from the terminal.
 
 ## Command line switches
 
-To test with command-line switches (note - this doesn't seem to work on
-the raspberry pi)
+Any of the config.json options can be set via command line switches. For
+example, to run the showcase in a small window:
 
-`./node_modules/.bin/electron main.js --SWITCH=VALUE`
+`creative-coding-showcase --width=400`
+
+Or to use command line switches when in development:
+
+`npx electron src/main.js --width=400`
 
 Supported command line switches and values are the same as the
 `config.json` file options. This makes it easy to change the way the
 app runs without having to edit the config file.
+
+(Note that adding new config options requires to add them to the list of
+switches checked for in `src/main.js`.)
 
 ## Adding sketches
 

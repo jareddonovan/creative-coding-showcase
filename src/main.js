@@ -13,8 +13,22 @@ const { finished } = require("stream/promises")
 
 const CRC32 = require("crc-32")
 
+// In your Electron app's main or renderer process
+console.log("chrome version: ", process.versions.chrome)
+
+// Main window for the app. This will be instantiated by `createWindow()`
+let mainWindow = null
+
 const defaultTitle = "Creative Coding Showcase"
 let currentName = ""
+
+// Read version from package.json so it works from both npx and npm
+const appPkg = require(path.join(__dirname, "../package.json"))
+const pkgVersion = appPkg.version
+
+// Set the name of the app explicitly so importing config files works
+// equivalently whether using `npm start` or `npx electron src/main.js`
+app.setName("creative-coding-showcase")
 
 // Store a list of all the IDs that have been generated while the app has
 // been running. This will be overwritten by data from a file read in once 
@@ -30,6 +44,7 @@ let permittedImportIds = {
 
 // Look for a config file in the user's default application data folder
 let userDataPath = app.getPath("userData")
+console.log({ userDataPath })
 let configPath = path.join(userDataPath, "config.json")
 
 // Look for a config file in the documents directory
@@ -39,9 +54,11 @@ if (!fs.existsSync(configPath)) {
   let defaultSketchesPath = path.join(
     documentsPath, "creative-coding-showcase", "sketches")
 
+  console.log("defaultSketchesPath:", defaultSketchesPath)
+
   // Default configuration options. 
   const defaultOpts = {
-    version: app.getVersion(),
+    version: pkgVersion,
     cabinetName: "test",
     width: 1440,
     height: 900,
@@ -63,6 +80,12 @@ if (!fs.existsSync(configPath)) {
   console.log("Config file does not exist => creating.")
   fs.writeFileSync(configPath,
     JSON.stringify(defaultOpts, undefined, 2), { encoding: "utf8" })
+} else {
+  let documentsPath = app.getPath("documents")
+  let defaultSketchesPath = path.join(
+    documentsPath, "creative-coding-showcase", "sketches")
+
+  console.log("defaultSketchesPath:", defaultSketchesPath)
 }
 
 // Read the configuration file in.
@@ -71,12 +94,12 @@ let cmdOpts = JSON.parse(fs.readFileSync(configPath, { encoding: "utf8" }))
 
 // Check that the version recorded in the configuration file matches the app
 // version and issue a warning if not.
-if (cmdOpts.version != app.getVersion()) {
+if (cmdOpts.version != pkgVersion) {
   console.log(
-    `\nWARNING: Configuration version does not match app version: config:${cmdOpts.version} => app:${app.getVersion()
+    `\nWARNING: Configuration version does not match app version: config:${cmdOpts.version} => app:${pkgVersion
     }\n`)
 }
-cmdOpts.version = app.getVersion()
+cmdOpts.version = pkgVersion
 
 // Add a blank _links.json file for the showcase sketches 
 if (!fs.existsSync(`${cmdOpts.sketchesPath}/_links.json`)) {
@@ -153,6 +176,7 @@ function handleGenerateImportCode() {
 const createWindow = () => {
   // Get any relevant boolean command-line arguments that were provided and
   // overwrite the values read from the configuration.
+  // Set like this: `npx electron src/main.js --fullScreen=true`
   for (let boolOpt of [
     "fullscreen", "devTools", "fixCss", "allowP5jsImports",
     "hideCursor", "showSketchDropdown"
@@ -165,7 +189,8 @@ const createWindow = () => {
 
   // Get any relevant integer command-line arguments that were provided and
   // overwrite the values read from the configuration.
-  for (let intOpt of ["width", "height", "debounceTime"]) {
+  // Set like this: `npx electron src/main.js --width=400`
+  for (let intOpt of ["width", "height", "debounceTime", "importPollRate"]) {
     if (app.commandLine.hasSwitch(intOpt)) {
       let optVal = Number.parseInt(app.commandLine.getSwitchValue(intOpt))
       if (!isNaN(optVal)) {
@@ -176,6 +201,7 @@ const createWindow = () => {
 
   // Get any relevant string command-line arguments that were provided and
   // overwrite the values read from the configuration.
+  // Set like this: `npx electron src/main.js --cabinetName=test`
   for (let strOpt of [
     "cabinetName", "sketchesPath", "importsUrl", "permittedImportIdsPath"
   ]) {
@@ -197,7 +223,7 @@ const createWindow = () => {
   // Print out the cmdOpts so we can check that we're getting what we expect.
   console.log("creating window with cmdOpts:\n", cmdOpts)
 
-  const win = new BrowserWindow({
+  mainWindow = new BrowserWindow({
     title: defaultTitle,
     icon: "images/cabinet-128.png",
     width: cmdOpts.width,
@@ -215,7 +241,7 @@ const createWindow = () => {
   //       <https://medium.com/@andreas.schallwig/building-html5-kiosk-applications-with-vue-js-and-electron-c64ac928b59f>
   //
   // if (cmdOpts.fullscreen){
-  //   win.setKiosk(true);
+  //   mainWindow.setKiosk(true);
   // }
 
   // Handler to allow the showcase.js client to set the name of the window
@@ -226,63 +252,87 @@ const createWindow = () => {
     const webContents = event.sender
     const win = BrowserWindow.fromWebContents(webContents)
     currentName = nameData.name
-    win.setTitle(nameData.displayName)
+    console.log("set currentName:", currentName)
+    mainWindow.setTitle(nameData.displayName)
   }
 
   // Function to check for new imports. This should happen periodically and each
   // time that a new import is found, it should launch a process to load that
   // import into the sketch.
   const checkForImports = async () => {  // Get filtered json
-    console.log("checkForImports()")
+    // This variable is going to hold on to any import update info we need to
+    // send. We will send it at the end of the function
+    let importUpdates = { log: [] }
 
-    win.webContents.send("import-info", {
-      msg: "checking for imports"
-    })
+    console.log("checkForImports()")
+    // importUpdates.log.push("Checking for imports")
 
     const listImportsUrl =
       `${cmdOpts.importsUrl}/index.php?c=${cmdOpts.cabinetName}`
 
-    let res = await fetch(listImportsUrl)
-    let json = await res.json()
+    let json
+    try {
+      console.log("before fetch: listImportsUrl")
+      let res = await fetch(listImportsUrl, { signal: AbortSignal.timeout(5000) })
+      console.log("after fetch")
+      json = await res.json()
 
-    console.log(`..got import json with ${json.length} items`)
+      console.log(`..got import json with ${json.length} items`)
 
-    // Only pay attention to import requests we have a recorded code for
-    // (i.e., ones we generated on this app during this run.)
-    let validJson = filterImportJson(json)
+      // Only pay attention to import requests we have a recorded code for
+      // (i.e., ones we generated on this app during this run.)
+      let validJson = filterImportJson(json)
 
-    console.log(`..got validJson with ${validJson.length} items`)
+      console.log(`..got validJson with ${validJson.length} items`)
 
-    let importJson = {}
+      let importJson = {}
 
-    for (let validEntry of validJson) {
-      win.webContents.send("import-info", {
-        msg: `importing ${validEntry}`
-      })
+      for (let validEntry of validJson) {
+        importUpdates.log.push(
+          `Importing (importCode): ${validEntry.import_code}`,
+          `Started import at ${new Date().toTimeString().split(" ")[0]}`
+        )
 
-      let [newId, newJson] = await importSketch(validEntry)
-      importJson[newId] = newJson
-      addEntryToImportLinksJson(newId, newJson)
+        let [newId, newJson, logMsgs] = await importSketch(validEntry)
 
-      // Record that the import code has been used.
-      let usedImportCode = validEntry.import_code
+        importUpdates.log.push(logMsgs)
 
-      importCodes = importCodes.map(ic => {
-        return {
-          code: ic.code,
-          isImported: ic.code === usedImportCode ? true : ic.isImported,
-          createdAt: ic.createdAt
-        }
-      })
+        importJson[newId] = newJson
+        addEntryToImportLinksJson(newId, newJson)
+
+        // Record that the import code has been used.
+        let usedImportCode = validEntry.import_code
+
+        importCodes = importCodes.map(ic => {
+          return {
+            code: ic.code,
+            isImported: ic.code === usedImportCode ? true : ic.isImported,
+            createdAt: ic.createdAt
+          }
+        })
+      }
+
+      importUpdates.importCodes = importCodes
+
+      saveImportCodes()
+
+      mainWindow.webContents.send("import-sketch", importJson)
+
+    } catch (err) {
+      console.log("checkForImports error", err.name)
+      importUpdates.log.push(
+        `Error fetching imports from ${listImportsUrl}:
+  Error.name:    ${err.name}
+       .message: ${err.message}
+       .cause:   ${err.cause}`, "test1", "test2"
+      )
     }
 
-    saveImportCodes()
+    console.log(
+      `rescheduling import poll for ${Math.ceil(cmdOpts.importPollRate / 1000)}s`)
 
-    win.webContents.send("import-sketch", importJson)
-
-    win.webContents.send("import-info", {
-      msg: `next import in ${Math.floor(cmdOpts.importPollRate / 1000)}s`
-    })
+    importUpdates.msToImport = cmdOpts.importPollRate
+    mainWindow.webContents.send("import-info", importUpdates)
 
     setTimeout(checkForImports, cmdOpts.importPollRate)
   }
@@ -292,9 +342,9 @@ const createWindow = () => {
 
   // Watch for ESC key events so that we can cancel the currently running
   // sketch and return to the showcase.
-  win.webContents.on("before-input-event", (event, input) => {
+  mainWindow.webContents.on("before-input-event", (event, input) => {
     if (input.type == "keyDown" && input.key === "Escape") {
-      win.webContents.send("back")
+      mainWindow.webContents.send("back")
     }
   })
 
@@ -317,19 +367,19 @@ const createWindow = () => {
       label: app.name,
       submenu: [
         {
-          click: () => win.webContents.send("next-sketch"),
+          click: () => mainWindow.webContents.send("next-sketch"),
           label: "Next Sketch",
         },
         {
-          click: () => win.webContents.send("prev-sketch"),
+          click: () => mainWindow.webContents.send("prev-sketch"),
           label: "Previous Sketch",
         },
         {
-          click: () => win.webContents.send("select"),
+          click: () => mainWindow.webContents.send("select"),
           label: "Select",
         },
         {
-          click: () => win.webContents.send("back"),
+          click: () => mainWindow.webContents.send("back"),
           label: "Back",
         },
         {
@@ -353,17 +403,17 @@ const createWindow = () => {
   Menu.setApplicationMenu(menu)
 
   // Load the showcase src file as our application page.
-  win.loadFile("src/html/showcase.html")
+  mainWindow.loadFile(path.join(__dirname, "html/showcase.html"))
 
   // Show the chromium dev tools if that has been requested. 
   if (cmdOpts.devTools) {
-    win.webContents.openDevTools()
+    mainWindow.webContents.openDevTools()
   }
 
   // Prevent the app from opening the URL in-app, instead open in browser.
   // TODO: I should lock this down for the final app so that it just doesn't 
   //       open at al. 
-  win.webContents.setWindowOpenHandler((details) => {
+  mainWindow.webContents.setWindowOpenHandler((details) => {
     console.log("webContents.windowOpenHandler() details:", details.url)
 
     shell.openExternal(details.url)
@@ -412,11 +462,18 @@ async function importSketch(importJson) {
   let pathRoot = `_imports/${userName.replace(/\s+/g, "_")}/${sketchId}`
   let fullPathRoot = `${cmdOpts.sketchesPath}/${pathRoot}`
 
+  let logMsgs = [
+    `sketchId: ${sketchId}`,
+    `p5jsUser: ${sketchUser}`,
+    `userName: ${userName}`
+  ]
+
   console.log("..sketchId:", sketchId)
 
   // Check if a previous import already exists
   if (fs.existsSync(fullPathRoot)) {
     console.log("..Removing previous import directory:", pathRoot)
+    logMsgs.push(`..Removing previous import directory: ${pathRoot}`)
     fs.rmSync(fullPathRoot, { recursive: true, force: true })
   }
 
@@ -548,7 +605,7 @@ async function importSketch(importJson) {
     thumb: thumbFile
   }
 
-  return [id, newJson]
+  return [id, newJson, logMsgs]
 }
 
 // This function will add an entry to the _links.json for the _import folder.

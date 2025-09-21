@@ -21,8 +21,14 @@ let isShowingGallery = true
 let selectedCoverId = null
 let nextCoverIdNum = 0
 let lastKp = -opts.debounceTime
+
+let divImportInfoContainer
 let preImportInfo
-let importInfo = "IMPORT INFO"
+let importInfo = {
+  timeOfImport: 0,
+  importCodes: [],
+  log: []
+}
 
 /////////////////////////////////////////////////
 //
@@ -43,7 +49,12 @@ async function setup() {
   divGallery = select("#gallery")
   divMain = select("main")
 
+  divImportInfoContainer = select("#importInfoContainer")
   preImportInfo = select("#importInfo")
+
+  preImportInfo.mouseClicked(() => {
+    divImportInfoContainer.toggleClass("front")
+  })
 
   window.electronAPI.onNextSketch(handleNextClicked)
   window.electronAPI.onPrevSketch(handlePrevClicked)
@@ -63,11 +74,11 @@ async function setup() {
 
   // If options specify that the cursor should not be hidden
   if (opts.hideCursor) {
-    console.log("we should hide the cursor")
+    // console.log("we should hide the cursor")
     divMain.addClass("hideCursor")
     document.body.classList.add("hideCursor")
   } else {
-    console.log("we should show the cursor")
+    // console.log("we should show the cursor")
     divMain.removeClass("hideCursor")
     document.body.classList.remove("hideCursor")
   }
@@ -83,17 +94,17 @@ async function setup() {
   lastKp = -opts.debounceTime
 
   // Fetch the json for the sketches already included in the showcase
-  console.log(
-    `Fetching configuration json from: ${opts.sketchesPath}/_links.json`)
+  // console.log(
+  //   `Fetching configuration json from: ${opts.sketchesPath}/_links.json`)
   const showcaseResponse = await fetch(`${opts.sketchesPath}/_links.json`)
   showcaseJson = await showcaseResponse.json()
 
   // Also fetch additional json for imported sketches if options indicate
   if (opts.allowP5jsImports) {
-    preImportInfo.show()
+    divImportInfoContainer.addClass("allowed")
     try {
-      console.log(
-        `Fetching import json from: ${opts.sketchesPath}/_imports/_links.json`)
+      // console.log(
+      //   `Fetching import json from: ${opts.sketchesPath}/_imports/_links.json`)
       const importResponse = await fetch(
         `${opts.sketchesPath}/_imports/_links.json`)
       importJson = await importResponse.json()
@@ -139,6 +150,12 @@ async function setup() {
   updateUI()
 }
 
+function draw() {
+  // frameRate(1)
+  // console.log("showcase.js draw()")
+  updateImportInfo()
+}
+
 function createCoversFromJson(json, position) {
   const names = Object.keys(json).sort()
   let newCoverId = ""
@@ -172,10 +189,12 @@ function updateUI() {
     unloadSketch()
     divMain.addClass("isShowingGallery")
     divGallery.removeClass("hidden")
+    divImportInfoContainer.removeClass("hidden")
     window.focus()
   } else {
     divMain.removeClass("isShowingGallery")
     divGallery.addClass("hidden")
+    divImportInfoContainer.addClass("hidden")
   }
 }
 
@@ -189,18 +208,20 @@ function setSelectedCoverId(newId) {
     oldTarget.removeClass("current")
   }
   let newTarget = select(`#${newId}`)
-  let behavior = "auto"
-  let scrollOpts = { behavior, block: "center", inline: "center" }
-  newTarget.elt.scrollIntoView(scrollOpts)
-  newTarget.addClass("current")
+  if (newTarget) {
+    let behavior = "auto"
+    let scrollOpts = { behavior, block: "center", inline: "center" }
+    newTarget.elt.scrollIntoView(scrollOpts)
+    newTarget.addClass("current")
 
-  // TODO: Fix up which one is selected in the dropdown.
-  let newIdx = Array.from(selSketchCovers.elt.options).findIndex(
-    o => o.dataset.coverId === newId)
-  selSketchCovers.elt.selectedIndex = newIdx
+    // TODO: Fix up which one is selected in the dropdown.
+    let newIdx = Array.from(selSketchCovers.elt.options).findIndex(
+      o => o.dataset.coverId === newId)
+    selSketchCovers.elt.selectedIndex = newIdx
 
-  updateLinks()
-  selectedCoverId = newId
+    updateLinks()
+    selectedCoverId = newId
+  }
 }
 
 /////////////////////////////////////////////////
@@ -401,6 +422,67 @@ function getNextCoverId() {
   return coverId
 }
 
+function updateImportInfo() {
+
+  let timeToImport = max(0, ceil(
+    (importInfo.timeOfImport - millis()) / 1000)
+  )
+
+  const timedLog = importInfo.log.map((e) => {
+    return `  ${e.msg} (${timeAgoInWords(e.timestamp)})`
+  })
+
+  preImportInfo.elt.innerHTML = `: IMPORT INFO
+  Next import check: ${timeToImport}s
+
+: RECENT IMPORT CODES
+${importInfo.importCodes.length > 0
+      ? importInfo.importCodes.map(c =>
+        `  ${c.isImported
+          ? `<s>${c.code}</s>`
+          : c.code} (${timeAgoInWords(c.createdAt)})`
+      ).join("\n")
+      : "  No import codes..."}
+
+: LOG (newest at top)
+${timedLog.length > 0
+      ? timedLog.reverse().join("\n")
+      : "  No messages..."}
+`
+}
+
+// Return a human-readable description of how long ago the provided date
+// object was. Based on the rails time_ago_in_words idea.
+function timeAgoInWords(fromDate) {
+  let ms = new Date() - fromDate
+
+  const MS_PER_SEC = 1000
+  const MS_PER_MIN = 1000 * 60
+  const MS_PER_HR = 1000 * 60 * 60
+
+  // Break ms down into hrs, mins, secs parts.
+  const hrs = floor(ms / MS_PER_HR)
+  const mins = floor(ms / MS_PER_MIN)
+  const secs = floor(ms / MS_PER_SEC)
+
+  // Return message in the most significant time unit (hours, mins, secs)
+  if (secs < 10) {
+    return "just now"
+  } else if (secs < 45) {
+    return "seconds ago"
+  } else if (secs < 90) {
+    return "about a minute ago"
+  } else if (mins < 45) {
+    return `${mins} minutes ago`
+  } else if (mins < 90) {
+    return "about an hour ago"
+  } else if (hrs < 24) {
+    return `${hrs} hours ago`
+  } else {
+    return "more than a day ago"
+  }
+}
+
 //////////////////////////////////////////////////////////////////////////
 //
 // Event handlers
@@ -414,14 +496,19 @@ function handleNextClicked(numToMove) {
   // let nextIdx = min(currIdx + numToMove, selectCover.elt.options.length -
   // 1)
 
-  let currDiv = getSelectedCover()
-  let nextIdx = Array.from(
-    currDiv.parentNode.children).indexOf(currDiv) + numToMove
+  if (opts.allowP5jsImports && divImportInfoContainer.hasClass("front")) {
+    divImportInfoContainer.removeClass("front")
+  } else {
+    let currDiv = getSelectedCover()
 
-  nextIdx = min(nextIdx, currDiv.parentNode.children.length - 2)
-  let nextDiv = currDiv.parentNode.children[nextIdx]
+    let nextIdx = Array.from(
+      currDiv.parentNode.children).indexOf(currDiv) + numToMove
 
-  setSelectedCoverId(nextDiv.id)
+    nextIdx = min(nextIdx, currDiv.parentNode.children.length - 2)
+    let nextDiv = currDiv.parentNode.children[nextIdx]
+
+    setSelectedCoverId(nextDiv.id)
+  }
 }
 
 /////////////////////////////////////////////////
@@ -432,8 +519,19 @@ function handlePrevClicked(numToMove) {
   // let prevIdx = max(0, currIdx - numToMove)
 
   let currDiv = getSelectedCover()
+
+  // If imports information is being shown, then allow that to be clicked into
+  if (opts.allowP5jsImports
+    && currDiv.id === "cover-0" && currDiv.parentNode.scrollLeft < 100) {
+    divImportInfoContainer.addClass("front")
+  }
+
   let prevIdx = Array.from(
     currDiv.parentNode.children).indexOf(currDiv) - numToMove
+
+  console.log("prevIdx:", prevIdx,
+    "currDiv.id:", currDiv.id,
+    "currDiv.offsetLeft", currDiv.offsetLeft)
 
   prevIdx = max(prevIdx, 1)
   let prevDiv = currDiv.parentNode.children[prevIdx]
@@ -468,7 +566,7 @@ function handleBackClicked() {
 // Handle when there is a new sketch to import
 //
 function handleImportSketch(json) {
-  console.log("handleImportSketch():", json)
+  // console.log("handleImportSketch():", json)
 
   let names = Object.keys(json)
 
@@ -478,13 +576,13 @@ function handleImportSketch(json) {
     let wasSelected = false
 
     if (Object.hasOwn(importJson, n)) {
-      console.log("Remove old cover and create a new one.")
+      // console.log("Remove old cover and create a new one.")
       let oldCoverId = importJson[n].coverId
 
       // First check whether the old cover was selected
       let oldCoverDiv = document.querySelector(`#${oldCoverId}`)
       if (oldCoverDiv.classList.contains("current")) {
-        console.log("The old cover was selected!")
+        // console.log("The old cover was selected!")
         wasSelected = true
       }
 
@@ -509,7 +607,38 @@ function handleImportSketch(json) {
 // Handle when there is an update on import process
 //
 function handleImportInfo(json) {
-  preImportInfo.elt.innerHTML = json.msg
+  // console.log("handleImportInfo")
+  // console.log("..json:", json)
+  // console.log("..importInfo (before):", importInfo)
+
+  const timestampedLog = json.log !== undefined
+    ? json.log.map(e => { return { msg: e, timestamp: new Date() } })
+    : []
+
+  const sortedImportCodes = json.importCodes !== undefined
+    ? json.importCodes.map(e => {
+      return {
+        ...e, createdAt: new Date(e.createdAt)
+      }
+    }).filter(c => new Date() - c.createdAt < 1000 * 60 * 60 * 24)
+      .sort((a, b) => b.createdAt - a.createdAt)
+    : undefined
+
+  // Update the importInfo json based on the information passed in
+  // React style using spread operator. 
+  importInfo = {
+    ...importInfo,
+    ...(json.status !== undefined ? { status: json.status } : {}),
+    ...(json.msToImport !== undefined
+      ? { timeOfImport: millis() + json.msToImport }
+      : {}),
+    importCodes: (json.importCodes !== undefined
+      ? [...sortedImportCodes]
+      : importInfo.importCodes),
+    log: [...importInfo.log, ...timestampedLog]
+  }
+
+  // console.log("..importInfo (after):", importInfo)
 }
 
 /////////////////////////////////////////////////
@@ -531,13 +660,13 @@ function handleSelectClicked(skipDebounce) {
   } else if (name === "Import Sketch") {
     showImportSketch(name)
   } else {
-    console.log("Don't know sketch: ", name)
+    // console.log("Don't know sketch: ", name)
   }
 }
 
 // Load the 'Import Sketch' sketch into the frame.
 function showImportSketch(name) {
-  console.log("showImportSketch()")
+  // console.log("showImportSketch()")
 
   let displayName = name
   let sketchPath = "import/index.html"
@@ -560,7 +689,7 @@ function showSketch(name, json) {
 
   let shouldFixSketchCss = json[name].fix_css !== false
 
-  console.log("sketchPath", sketchPath)
+  // console.log("sketchPath", sketchPath)
 
   loadSketch(name, displayName, sketchPath, shouldShowCursor,
     shouldFixSketchCss)
@@ -582,11 +711,11 @@ function loadSketch(name, displayName, sketchPath, shouldShowCursor,
     ifm.elt.contentWindow.focus()
 
     if (shouldShowCursor) {
-      console.log("should show cursor in sketch")
+      // console.log("should show cursor in sketch")
       ifm.elt.contentDocument.body.classList.remove("hideCursor")
     }
     else {
-      console.log("should not show cursor in sketch")
+      // console.log("should not show cursor in sketch")
       ifm.elt.contentDocument.body.classList.add("hideCursor")
     }
 
@@ -659,7 +788,7 @@ function keyPressed() {
     } else if (choice == "next") {
       handleNextClicked(1)
     } else if (choice == "select") {
-      console.log("select clicked")
+      // console.log("select clicked")
       handleSelectClicked(true)
     }
   }
