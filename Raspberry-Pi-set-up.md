@@ -21,6 +21,14 @@ then test the connection by ssh-ing back to the cabinet.
 
 `ssh USER@CABINET_NAME.local`
 
+## Set the time on the cabinet
+
+I had a problem with some of my raspberry pis not syncrhonising with a time
+server. I edited `/etc/systemd/timesyncd.conf` to add the following line:
+
+`NTP=au.pool.ntp.org`
+
+
 ## Configure git
 
 ```
