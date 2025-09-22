@@ -442,7 +442,7 @@ ${importInfo.importCodes.length > 0
           ? `<s>${c.code}</s>`
           : c.code} (${timeAgoInWords(c.createdAt)})`
       ).join("\n")
-      : "  No import codes..."}
+      : "  No recent import codes..."}
 
 : LOG (newest at top)
 ${timedLog.length > 0
