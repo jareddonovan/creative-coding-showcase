@@ -3,6 +3,22 @@
 This file contains working notes for development as I go. It is not intended
 for end users.
 
+## Date: 2026-06-22
+
+Getting the app set up on a new computer for this year's coding exhibition.
+
+Followed instruction in README. It installed fine, but when I ran `npm start`, I got the following error: 
+
+```
+Uncaught Exception:
+Error: ENOENT: no such file or directory...
+```
+
+Turned out this was because one of the expected folders was missing. I fixed the bug. writeFileSync does not take recursive: true as an option (unlike dirs)
+
+Also added a launch.json file for debugging in vscode and updated README
+accordingly. 
+
 ## Date: 2025-09-20
 
 TODO:
