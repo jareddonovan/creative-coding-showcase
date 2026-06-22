@@ -101,10 +101,16 @@ if (cmdOpts.version != pkgVersion) {
 }
 cmdOpts.version = pkgVersion
 
+// Check that the sketchesPath exists and if not, create it.
+if (!fs.existsSync(cmdOpts.sketchesPath)) {
+  console.log(`Sketches path does not exist => creating: ${cmdOpts.sketchesPath}`)
+  fs.mkdirSync(cmdOpts.sketchesPath, { recursive: true })
+}
+
 // Add a blank _links.json file for the showcase sketches 
 if (!fs.existsSync(`${cmdOpts.sketchesPath}/_links.json`)) {
   fs.writeFileSync(`${cmdOpts.sketchesPath}/_links.json`,
-    JSON.stringify({}, undefined, 4), { encoding: "utf-8", recursive: true })
+    JSON.stringify({}, undefined, 4), { encoding: "utf-8" })
 }
 
 // Read / create _links.json and _importCodes.json files if imports are to be
@@ -116,7 +122,7 @@ if (cmdOpts.allowP5jsImports) {
 
   if (!fs.existsSync(`${cmdOpts.sketchesPath}/_imports/_links.json`)) {
     fs.writeFileSync(`${cmdOpts.sketchesPath}/_imports/_links.json`,
-      JSON.stringify({}, undefined, 4), { encoding: "utf-8", recursive: true }
+      JSON.stringify({}, undefined, 4), { encoding: "utf-8" }
     )
   }
 
@@ -145,7 +151,7 @@ function saveImportCodes() {
   }
   fs.writeFileSync(`${cmdOpts.sketchesPath}/_imports/_importCodes.json`,
     JSON.stringify(importCodes, undefined, 4),
-    { encoding: "utf-8", recursive: true }
+    { encoding: "utf-8" }
   )
 }
 
@@ -635,15 +641,18 @@ const createImportFolder = (path) => {
 
 const createFileWithContent = (path, content) => {
   console.log("creating file with content.")
-  fs.writeFileSync(`${cmdOpts.sketchesPath}/${path}`, content)
+  const fullPath = `${cmdOpts.sketchesPath}/${path}`
+  fs.mkdirSync(path.dirname(fullPath), { recursive: true })
+  fs.writeFileSync(fullPath, content)
 }
 
 const downloadFile = async (path, url) => {
   console.log("downloading:", url)
 
   const res = await fetch(url)
-  const fileStream = fs.createWriteStream(
-    `${cmdOpts.sketchesPath}/${path}`, { flags: "wx" })
+  const fullPath = `${cmdOpts.sketchesPath}/${path}`
+  fs.mkdirSync(path.dirname(fullPath), { recursive: true })
+  const fileStream = fs.createWriteStream(fullPath, { flags: "wx" })
   await finished(Readable.fromWeb(res.body).pipe(fileStream))
 }
 
