@@ -4,7 +4,7 @@ The following is a quick listing of everything to do to set the showcase app
 up to run well on a rasperry pi for one of the [Creative Coding Cabinets]. For
 more general info, see the [README](README.md)
 
-* Set hostname
+* Set hostname (use `raspi-config`)
 * Set up wifi
 * Make sure keyboard layout is correct.
 * Set username / password.
