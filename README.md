@@ -32,6 +32,9 @@ $ npm run make
 The compiled showcase application will be created in a subfolder of the `out`
 directory (exact name will vary depending on your operating system).
 
+To debug the main process in vscode, set a breakpoint in main.js and launch the
+app from the Debug View in vscode. See [electron docs][1] for more details. 
+
 ### To install on Raspberry Pi
 
 See the [Raspberry-Pi-set-up](Raspberry-Pi-set-up.md) guide for full details.
@@ -285,3 +288,4 @@ include here.
 TO BE ADDED.
 
 [Creative Coding Cabinets]: https://github.com/jareddonovan/creative-coding-cabinets
+[1]: https://www.electronjs.org/docs/latest/tutorial/debugging-main-process
