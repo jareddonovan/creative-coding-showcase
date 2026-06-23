@@ -114,6 +114,9 @@ The format of the file with a single object containing the following keys:
   you're testing because it allows you to quickly jump to a particular 
   sketch, but should probably be hidden when the cabinets are being
   shown.
+* `"showNonConfirmed"` (boolean): Whether to show sketches that have not
+  confirmed their participation. Useful for pre-exhibition setting, but should
+  not be used for a live exhibition.
 
 Here are the default values for the config file:
 
@@ -133,6 +136,7 @@ Here are the default values for the config file:
   "permittedImportsIdPath": `[USER DOCUMENTS]/creative-coding-showcase/sketches/_permittedImportIds.json,
   "hideCursor": true,
   "showSketchDropdown": false,
+  "showNonConfirmed": false 
 }
 ```
 

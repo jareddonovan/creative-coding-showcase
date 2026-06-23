@@ -165,7 +165,7 @@ function createCoversFromJson(json, position) {
 
     if (json[name].is_buggy) {
       // console.log(`${name} is_buggy => not adding`);
-    } else if (!json[name].has_confirmed) {
+    } else if (!json[name].has_confirmed && !opts.showNonConfirmed) {
       // console.log(`${name} has not confirmed => not adding`);
     } else if (
       // Check if the name matches, or is 'test'

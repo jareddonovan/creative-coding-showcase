@@ -72,7 +72,8 @@ if (!fs.existsSync(configPath)) {
     importPollRate: 60000,
     permittedImportIdsPath: `${defaultSketchesPath}/_permittedImportIds.json`,
     hideCursor: true,
-    showSketchDropdown: false
+    showSketchDropdown: false,
+    showNonConfirmed: false,
   }
 
   // Other commonly used dimensions. 1920 x 1080, 1280 x 720
@@ -185,7 +186,7 @@ const createWindow = () => {
   // Set like this: `npx electron src/main.js --fullScreen=true`
   for (let boolOpt of [
     "fullscreen", "devTools", "fixCss", "allowP5jsImports",
-    "hideCursor", "showSketchDropdown"
+    "hideCursor", "showSketchDropdown", "showNonConfirmed"
   ]) {
     if (app.commandLine.hasSwitch(boolOpt)) {
       let optVal = app.commandLine.getSwitchValue(boolOpt)
