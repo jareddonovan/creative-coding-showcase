@@ -176,17 +176,19 @@ main.gallery.isShowingGallery {
 }
 
 .covers div.name {
-  color: white;
+  color: rgb(0, 1, 44);
   font-weight: bold;
   text-align: center;
   width: 100%;
   padding: 9px 0 13px 0;
-  background: rgba(0, 0, 0, 0.5);
-  border-radius: 0 0 10px 10px;
+  /* background: rgba(0, 0, 0, 0.5); */
+  /* border-radius: 0 0 10px 10px; */
+  position: absolute;
+  bottom: 100%;
 }
 
 .covers > div.current div.name {
-  text-shadow: #a746cb 1px 2px 4px;
+  text-shadow: #ffef62 -4px -4px 8px, #ffef62 4px -4px 8px;
 }
 
 .slider > a {
