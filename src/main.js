@@ -13,6 +13,8 @@ const { finished } = require("stream/promises")
 
 const CRC32 = require("crc-32")
 
+//app.disableHardwareAcceleration();
+
 // In your Electron app's main or renderer process
 console.log("chrome version: ", process.versions.chrome)
 
@@ -237,7 +239,8 @@ const createWindow = () => {
     height: cmdOpts.height,
     fullscreen: cmdOpts.fullscreen,
     webPreferences: {
-      preload: path.join(__dirname, "preload.js")
+      preload: path.join(__dirname, "preload.js"),
+      webGl: true
     }
   })
 
