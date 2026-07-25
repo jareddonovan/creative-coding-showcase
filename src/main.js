@@ -18,6 +18,19 @@ app.commandLine.appendSwitch('disable-gpu');
 app.commandLine.appendSwitch('enable-logging');
 app.commandLine.appendSwitch('v', '1');
 
+app.on("ready", () => console.log("app ready"));
+app.on("will-finish-launching", () => console.log("will finish launching"));
+app.on("quit", (_, code) => console.log("quit", code));
+app.on("render-process-gone", (_, webContents, details) => console.log(details));
+app.on("child-process-gone", (_, details) => console.log(details));
+
+process.on("uncaughtException", err => {
+  console.error(err);
+});
+
+process.on("unhandledRejection", err => {
+  console.error(err);
+});
 
 // In your Electron app's main or renderer process
 console.log("chrome version: ", process.versions.chrome)
@@ -239,9 +252,12 @@ const createWindow = () => {
   mainWindow = new BrowserWindow({
     title: defaultTitle,
     icon: "images/cabinet-128.png",
-    width: cmdOpts.width,
-    height: cmdOpts.height,
-    fullscreen: cmdOpts.fullscreen,
+    x: 0,
+    y: 0,
+    width: 800, // cmdOpts.width,
+    height: 600, // cmdOpts.height,
+    show: true,
+    fullscreen: false, // cmdOpts.fullscreen,
     webPreferences: {
       preload: path.join(__dirname, "preload.js"),
       webGl: true
@@ -671,10 +687,12 @@ app.whenReady().then(() => {
   createWindow()
 
   app.on("activate", () => {
+    console.log("app activate")
     if (BrowserWindow.getAllWindows().length === 0) createWindow()
   })
 })
 
 app.on("window-all-closed", () => {
+  console.log("app window-all-closed")
   if (process.platform !== "darwin") app.quit()
 })
