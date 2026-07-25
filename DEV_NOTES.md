@@ -3,6 +3,17 @@
 This file contains working notes for development as I go. It is not intended
 for end users.
 
+## Date: 2026-07-25
+
+In order to upgrade the electron engine to 43 (which is required to run ml5
+sketches more effectively) I need to also upgrade node to at least v23. Node 27
+is the currently active version. I will try to updgrade to LTS and then consider
+whether to upgrade to v27. 
+
+```
+nvm install --lts
+```
+
 ## Date: 2026-06-22
 
 Getting the app set up on a new computer for this year's coding exhibition.
