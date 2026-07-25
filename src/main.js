@@ -13,7 +13,11 @@ const { finished } = require("stream/promises")
 
 const CRC32 = require("crc-32")
 
-//app.disableHardwareAcceleration();
+app.disableHardwareAcceleration();
+app.commandLine.appendSwitch('disable-gpu');
+app.commandLine.appendSwitch('enable-logging');
+app.commandLine.appendSwitch('v', '1');
+
 
 // In your Electron app's main or renderer process
 console.log("chrome version: ", process.versions.chrome)
