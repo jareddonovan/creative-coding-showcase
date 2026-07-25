@@ -67,6 +67,14 @@ OpenGL ES profile version string: OpenGL ES 3.1 Mesa 23.2.1-1~bpo12+rpt3
 OpenGL ES profile shading language version string: OpenGL ES GLSL ES 3.10
 ```
 
+Checking to see if electron is still running in the background after the window
+closes: 
+
+```
+ps -ef | grep electron
+jared       4529    1828  0 15:28 pts/0    00:00:00 grep --color=auto electron
+```
+
 
 ## Date: 2026-06-22
 
