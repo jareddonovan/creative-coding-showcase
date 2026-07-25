@@ -14,6 +14,21 @@ whether to upgrade to v27.
 nvm install --lts
 ```
 
+I then had to edit the `.nvmrc` file to be the same version, and then run
+`npm install` again (and do some permissions stuff that it prompted for).
+
+I then re-ran `npm run make` and installed the created `*.deb` file. But I get
+the following error when I run it from the terminal: 
+
+```
+Xlib:  extension "DRI2" missing on display ":0".
+[2304:0725/145329.469013:ERROR:media/gpu/vaapi/vaapi_wrapper.cc:1796] vaInitialize failed: unknown libva error
+```
+
+I assume this is just some package that needs to be upgraded on the raspberry 
+pi? 
+
+
 ## Date: 2026-06-22
 
 Getting the app set up on a new computer for this year's coding exhibition.
