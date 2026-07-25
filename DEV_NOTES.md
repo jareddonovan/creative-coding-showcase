@@ -216,6 +216,28 @@ Xlib:  extension "DRI2" missing on display ":0".
 
 ```
 
+I adjusted my screen configuration in raspberry pi (I'm currently using two
+monitors) so that the monitors are both at the top of the display space and the
+main monitor is on the left. I ran it again and this time it worked. I'm not
+sure if this is just some voodoo, or what, but at least it worked.
+
+I started commenting out the stuff I had added and I found that I could get rid
+of everything, execpt either of these lines
+
+```
+app.disableHardwareAcceleration();
+app.commandLine.appendSwitch('disable-gpu');
+```
+
+If at least one of those was left in, it would run fine. but if both were
+commented out, it would run but with really buggy/glitchy graphics, and the
+controls did not function properly. The left and right buttons would glitch
+around and the graphics seemed to get 'stuck' with some parts of the screen
+seeming like they weren't fully painting in? 
+
+The other thing I discovered is that if I set `fullscreen: true` again, it
+would immediately crash. 
+
 
 ## Date: 2026-06-22
 
