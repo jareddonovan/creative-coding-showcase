@@ -76,6 +76,31 @@ jared       4529    1828  0 15:28 pts/0    00:00:00 grep --color=auto electron
 ```
 
 
+Trying to run electron directly
+
+```
+npx electron --help
+Electron 43.2.0 - Build cross platform desktop apps with JavaScript, HTML, and CSS
+Usage: electron [options] [path]
+
+A path to an Electron app may be specified. It must be one of the following:
+  - index.js file.
+  - Folder containing a package.json file.
+  - Folder containing an index.js file.
+  - .html/.htm file.
+  - http://, https://, or file:// URL.
+
+Options:
+  -i, --interactive     Open a REPL to the main process.
+  -r, --require         Module to preload (option can be repeated).
+  -v, --version         Print the version.
+  -a, --abi             Print the Node ABI version.
+Xlib:  extension "DRI2" missing on display ":0".
+[2436:0725/154156.498124:ERROR:media/gpu/vaapi/vaapi_wrapper.cc:1796] vaInitialize failed: unknown libva error
+
+```
+
+
 ## Date: 2026-06-22
 
 Getting the app set up on a new computer for this year's coding exhibition.
