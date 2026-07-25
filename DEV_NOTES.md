@@ -75,6 +75,121 @@ ps -ef | grep electron
 jared       4529    1828  0 15:28 pts/0    00:00:00 grep --color=auto electron
 ```
 
+Also added some extra logging and error catching to main.js. This is the output
+from `npm start` now:
+
+```
+> creative-coding-showcase@1.2.2.1 start
+> electron-forge start
+
+â Checking your system
+â Locating application
+â Loading configuration
+â Preparing native dependencies [0.3s]
+â Running generateAssets hook
+
+chrome version:  150.0.7871.129
+{ userDataPath: '/home/jared/.config/creative-coding-showcase' }
+defaultSketchesPath: /home/jared/Documents/creative-coding-showcase/sketches
+Reading config file from:
+	/home/jared/.config/creative-coding-showcase/config.json
+[3047:0725/154624.565607:WARNING:ui/ozone/platform/wayland/common/wayland_object.cc:119] Binding to zwp_pointer_gestures_v1 version 1 but version 3 is available.
+[3047:0725/154624.874669:VERBOSE1:components/os_crypt/sync/key_storage_util_linux.cc:46] Password storage detected desktop environment: (unknown)
+[3047:0725/154624.876367:VERBOSE1:components/device_event_log/device_event_log_impl.cc:203] [15:46:24.876] Display: EVENT: wayland_screen.cc:146 Displays updated, count: 1
+[3047:0725/154624.880527:VERBOSE1:components/device_event_log/device_event_log_impl.cc:203] [15:46:24.880] Display: EVENT: wayland_screen.cc:149 Display[42] bounds=[0,895 1280x720], workarea=[0,895 1280x720], scale=1, rotation=0, panel_rotation=0 external detected
+[3047:0725/154624.880609:VERBOSE1:components/device_event_log/device_event_log_impl.cc:203] [15:46:24.880] Display: EVENT: wayland_screen.cc:146 Displays updated, count: 2
+[3047:0725/154624.880652:VERBOSE1:components/device_event_log/device_event_log_impl.cc:203] [15:46:24.880] Display: EVENT: wayland_screen.cc:149 Display[42] bounds=[0,895 1280x720], workarea=[0,895 1280x720], scale=1, rotation=0, panel_rotation=0 external detected
+[3047:0725/154624.880691:VERBOSE1:components/device_event_log/device_event_log_impl.cc:203] [15:46:24.880] Display: EVENT: wayland_screen.cc:149 Display[43] bounds=[1276,715 1440x900], workarea=[1276,715 1440x900], scale=1, rotation=0, panel_rotation=0 external detected
+[3047:0725/154624.880859:VERBOSE1:components/proxy_config/pref_proxy_config_tracker_impl.cc:462] 0x14007a4100: set chrome proxy config service to 0x1400a41500
+[3047:0725/154624.882925:VERBOSE1:dbus/bus.cc:915] Method call: message_type: MESSAGE_METHOD_CALL
+interface: org.freedesktop.DBus
+member: GetNameOwner
+signature: s
+
+string "org.chromium.bluetooth.Manager"
+
+Xlib:  extension "DRI2" missing on display ":0".
+creating window with cmdOpts:
+ {
+  version: '1.2.2.1',
+  cabinetName: 'huey',
+  width: 1240,
+  height: 720,
+  fullscreen: true,
+  debounceTime: 100,
+  fixCss: true,
+  devTools: false,
+  sketchesPath: '/home/jared/Documents/creative-coding-showcase/sketches-2026',
+  allowP5jsImports: false,
+  importsUrl: 'http://api.jareddonovan.com/imports',
+  importPollRate: 10000,
+  permittedImportIdsPath: '/home/jared/Documents/creative-coding-showcase/sketches-2026/_permittedImportIds.json',
+  hideCursor: true,
+  showSketchDropdown: false,
+  showNonConfirmed: false
+}
+[3085:0725/154624.914050:ERROR:media/gpu/vaapi/vaapi_wrapper.cc:1796] vaInitialize failed: unknown libva error
+[3047:0725/154624.917238:WARNING:ui/ozone/platform/wayland/host/wayland_surface.cc:170] Server doesn't support zcr_alpha_compositing_v1.
+[3047:0725/154624.917387:WARNING:ui/ozone/platform/wayland/host/wayland_surface.cc:185] Server doesn't support overlay_prioritizer.
+[3047:0725/154624.917562:WARNING:ui/ozone/platform/wayland/host/wayland_surface.cc:200] Server doesn't support wp_content_type_v1
+[3047:0725/154624.917620:WARNING:ui/ozone/platform/wayland/host/wayland_surface.cc:214] Server doesn't support wp_color_management_surface_v1.
+[3047:0725/154624.918836:WARNING:electron/shell/common/api/electron_api_native_image.cc:205] Failed to load image from path 'images/cabinet-128.png'
+[3047:0725/154624.920280:VERBOSE1:components/proxy_config/pref_proxy_config_tracker_impl.cc:462] 0x14007a5b00: set chrome proxy config service to 0x1400a42f40
+[3047:0725/154624.921242:VERBOSE1:base/files/file_util_posix.cc:309] Cannot stat "/home/jared/.config/creative-coding-showcase/Code Cache/pc": No such file or directory (2)
+[3047:0725/154624.967589:VERBOSE1:content/browser/first_party_sets/first_party_sets_handler_impl_instance.cc:270] Empty path. Failed initializing First-Party Sets database.
+[3047:0725/154625.013430:VERBOSE1:base/files/file_util_posix.cc:309] Cannot stat "/home/jared/.config/creative-coding-showcase/databases": No such file or directory (2)
+[3047:0725/154625.013964:VERBOSE1:base/allocator/scheduler_loop_quarantine_config.cc:168] No entry found for browser/io.
+[3047:0725/154625.014918:VERBOSE1:dbus/bus.cc:915] Method call: message_type: MESSAGE_METHOD_CALL
+interface: org.freedesktop.DBus
+member: GetNameOwner
+signature: s
+
+string "org.bluez"
+
+[3047:0725/154625.015652:VERBOSE1:dbus/bus.cc:915] Method call: message_type: MESSAGE_METHOD_CALL
+interface: org.freedesktop.DBus
+member: GetNameOwner
+signature: s
+
+string "org.bluez"
+
+[3047:0725/154625.019412:VERBOSE1:dbus/bus.cc:698] Filter function already exists: 1 with associated data: 0x1400250c40
+[3047:0725/154625.019498:VERBOSE1:dbus/bus.cc:915] Method call: message_type: MESSAGE_METHOD_CALL
+interface: org.freedesktop.DBus
+member: GetNameOwner
+signature: s
+
+string "org.bluez"
+
+[3047:0725/154625.020146:VERBOSE1:dbus/bus.cc:698] Filter function already exists: 1 with associated data: 0x1400250c40
+[3047:0725/154625.020262:VERBOSE1:dbus/bus.cc:915] Method call: message_type: MESSAGE_METHOD_CALL
+interface: org.freedesktop.DBus
+member: GetNameOwner
+signature: s
+
+string "org.bluez"
+
+[3047:0725/154625.021232:VERBOSE1:content/browser/loader/file_url_loader_factory.cc:470] FileURLLoader::Start: file:///home/jared/Documents/coding/creative-coding-showcase/src/html/showcase.html
+[3047:0725/154625.050285:WARNING:net/disk_cache/blockfile/backend_impl.cc:1860] Destroying invalid entry.
+[3047:0725/154625.050594:VERBOSE1:content/browser/loader/file_url_loader_factory.cc:470] FileURLLoader::Start: file:///home/jared/Documents/coding/creative-coding-showcase/src/html/p5.js
+[3047:0725/154625.053360:VERBOSE1:dbus/bus.cc:915] Method call: message_type: MESSAGE_METHOD_CALL
+interface: org.freedesktop.DBus
+member: GetNameOwner
+signature: s
+
+string "org.freedesktop.systemd1"
+
+[3047:0725/154625.053401:VERBOSE1:content/browser/loader/file_url_loader_factory.cc:470] FileURLLoader::Start: file:///home/jared/Documents/coding/creative-coding-showcase/src/html/showcase.css
+[3047:0725/154625.053397:VERBOSE1:content/browser/loader/file_url_loader_factory.cc:470] FileURLLoader::Start: file:///home/jared/Documents/coding/creative-coding-showcase/src/html/p5.sound.min.js
+[3047:0725/154625.053431:VERBOSE1:content/browser/loader/file_url_loader_factory.cc:470] FileURLLoader::Start: file:///home/jared/Documents/coding/creative-coding-showcase/src/html/showcase.js
+[3047:0725/154625.070572:VERBOSE1:dbus/bus.cc:915] Method call: message_type: MESSAGE_METHOD_CALL
+interface: org.freedesktop.DBus
+member: GetNameOwner
+signature: s
+
+string "org.freedesktop.portal.Desktop"
+```
+
 
 Trying to run electron directly
 
