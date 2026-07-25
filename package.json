@@ -1,6 +1,6 @@
 {
   "name": "creative-coding-showcase",
-  "version": "1.2.1.9",
+  "version": "1.2.1.11",
   "description": "Creative Coding Showcase",
   "main": "src/main.js",
   "scripts": {
