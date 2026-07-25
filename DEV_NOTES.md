@@ -28,6 +28,45 @@ Xlib:  extension "DRI2" missing on display ":0".
 I assume this is just some package that needs to be upgraded on the raspberry 
 pi? 
 
+I installed `mesa-utils` and then ran `glxinfo -B` to get graphics info
+
+```
+sudo apt-install mesa-utils
+glxinfo -B
+```
+
+this gave output: 
+
+```
+name of display: :0
+display: :0  screen: 0
+direct rendering: Yes
+Extended renderer info (GLX_MESA_query_renderer):
+    Vendor: Broadcom (0x14e4)
+    Device: V3D 7.1 (0xffffffff)
+    Version: 23.2.1
+    Accelerated: yes
+    Video memory: 8048MB
+    Unified memory: yes
+    Preferred profile: core (0x1)
+    Max core profile version: 3.1
+    Max compat profile version: 3.1
+    Max GLES1 profile version: 1.1
+    Max GLES[23] profile version: 3.1
+OpenGL vendor string: Broadcom
+OpenGL renderer string: V3D 7.1
+OpenGL core profile version string: 3.1 Mesa 23.2.1-1~bpo12+rpt3
+OpenGL core profile shading language version string: 1.40
+OpenGL core profile context flags: (none)
+
+OpenGL version string: 3.1 Mesa 23.2.1-1~bpo12+rpt3
+OpenGL shading language version string: 1.40
+OpenGL context flags: (none)
+
+OpenGL ES profile version string: OpenGL ES 3.1 Mesa 23.2.1-1~bpo12+rpt3
+OpenGL ES profile shading language version string: OpenGL ES GLSL ES 3.10
+```
+
 
 ## Date: 2026-06-22
 
