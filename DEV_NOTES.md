@@ -195,6 +195,7 @@ Trying to run electron directly
 
 ```
 npx electron --help
+
 Electron 43.2.0 - Build cross platform desktop apps with JavaScript, HTML, and CSS
 Usage: electron [options] [path]
 
@@ -211,7 +212,7 @@ Options:
   -v, --version         Print the version.
   -a, --abi             Print the Node ABI version.
 Xlib:  extension "DRI2" missing on display ":0".
-[2436:0725/154156.498124:ERROR:media/gpu/vaapi/vaapi_wrapper.cc:1796] vaInitialize failed: unknown libva error
+[3233:0725/155048.008470:ERROR:media/gpu/vaapi/vaapi_wrapper.cc:1796] vaInitialize failed: unknown libva error
 
 ```
 
