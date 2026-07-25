@@ -13,8 +13,14 @@ const { finished } = require("stream/promises")
 
 const CRC32 = require("crc-32")
 
-app.disableHardwareAcceleration();
+app.commandLine.appendSwitch('ozone-platform', 'x11');
+app.commandLine.appendSwitch('use-gl', 'egl');
+
+// app.disableHardwareAcceleration();
 // app.commandLine.appendSwitch('disable-gpu');
+app.commandLine.appendSwitch('disable-gpu-compositing');
+app.commandLine.appendSwitch('disable-gpu-rasterization');
+
 // app.commandLine.appendSwitch('enable-logging');
 // app.commandLine.appendSwitch('v', '1');
 
